@@ -6,6 +6,7 @@ class Environment:
     def __init__(self, (width, height)):
         self.width = width
         self.height = height
+        self.colour = (255, 255, 255)
 
 (width, height) = (800, 800)
 screen = pygame.display.set_mode((width, height))
