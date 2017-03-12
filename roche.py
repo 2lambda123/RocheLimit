@@ -48,6 +48,7 @@ class Environment:
             for planet2 in self.planets[i + 1:]:
             #     planet.attract(planet2)
                 planet.verlet(planet2)
+                planet2.verlet(planet)
 
 
 class Planet:
@@ -74,9 +75,10 @@ class Planet:
         self.velocity += acceleration
 
     def verlet(self, other, dt=0.01):
-        self.velocity += 0.5 * dt * self.getForce(other)  # this is illegal. could move scaling to getForce, that's dumb
-        self.position += dt*self.velocity
-        self.velocity += 0.5 * dt * self.getForce(other)  # right now this requires two function calls
+        if not self.fixed:
+            self.velocity += 0.5 * dt * self.getForce(other)  # this is illegal. could move scaling to getForce, that's dumb
+            self.position += dt*self.velocity
+            self.velocity += 0.5 * dt * self.getForce(other)  # right now this requires two function calls
 
     def attract(self, other):
         dr = self.position - other.position
