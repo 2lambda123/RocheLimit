@@ -41,3 +41,5 @@ while running:
             pygame.draw.circle(screen, p.colour, (int(p.position.x), height - int(p.position.y)), int(p.size), 0)
 
     pygame.display.flip()
+
+pygame.quit()  # IDLE interpreter friendly
