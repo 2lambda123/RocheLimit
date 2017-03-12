@@ -70,6 +70,11 @@ class Planet:
         """ Change velocity by vector a """
         self.velocity += acceleration
 
+    def verlet(self, other, fx, fy, dt=0.01):
+        self.velocity += 0.5 * dt * self.getForce(other)
+        self.position += dt*self.velocity
+        self.velocity += 0.5 * dt * self.getForce(other)  # right now this requires two function calls
+
     def attract(self, other):
         dr = self.position - other.position
         dist = dr.length()
@@ -78,3 +83,12 @@ class Planet:
         force = G * self.mass * other.mass / dist ** 2
         self.accelerate(-Vector2D.create_from_angle(theta, force / self.mass))
         other.accelerate(Vector2D.create_from_angle(theta, force / other.mass))
+
+    def getForce(self, other):  # this isn't where this function should go
+        dr = self.position - other.position
+        dist = dr.length()
+
+        theta = dr.angle()
+        force = G * self.mass * other.mass / dist ** 2
+        fx, fy = -Vector2D.create_from_angle(theta, force / self.mass)  # this feels wrong
+        return(fx, fy)
