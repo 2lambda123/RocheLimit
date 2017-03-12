@@ -65,29 +65,11 @@ class Planet:
         self.velocity = Vector2D.zero()
         self.fixed = False
 
-    def move(self):
-        """ Update position based on velocity """
-        if not self.fixed:
-            self.position += self.velocity
-
-    def accelerate(self, acceleration):
-        """ Change velocity by vector a """
-        self.velocity += acceleration
-
     def verlet(self, other, dt=0.01):
         if not self.fixed:
-            self.velocity += 0.5 * dt * self.getForce(other)  # this is illegal. could move scaling to getForce, that's dumb
+            self.velocity += 0.5 * dt * self.getForce(other)
             self.position += dt*self.velocity
             self.velocity += 0.5 * dt * self.getForce(other)  # right now this requires two function calls
-
-    def attract(self, other):
-        dr = self.position - other.position
-        dist = dr.length()
-
-        theta = dr.angle()
-        force = G * self.mass * other.mass / dist ** 2
-        self.accelerate(-Vector2D.create_from_angle(theta, force / self.mass))
-        other.accelerate(Vector2D.create_from_angle(theta, force / other.mass))
 
     def getForce(self, other):  # this isn't where this function should go
         dr = self.position - other.position
