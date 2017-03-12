@@ -5,6 +5,7 @@ from geometry import Vector2D
 # Gravitational Constant
 G = 0.2
 
+
 class Environment:
     """ Defines the boundary of a simulation and its properties """
 
@@ -41,11 +42,13 @@ class Environment:
 
         for i, planet in enumerate(self.planets):
             # One planet functions get called here
-            planet.move()
+            # planet.move()
 
-            # Two planet functions get called here
+            # # Two planet functions get called here
             for planet2 in self.planets[i + 1:]:
-                planet.attract(planet2)
+            #     planet.attract(planet2)
+                planet.verlet(planet2)
+
 
 class Planet:
     """ A circular planet with a velocity, size and density """
@@ -70,8 +73,8 @@ class Planet:
         """ Change velocity by vector a """
         self.velocity += acceleration
 
-    def verlet(self, other, fx, fy, dt=0.01):
-        self.velocity += 0.5 * dt * self.getForce(other)
+    def verlet(self, other, dt=0.01):
+        self.velocity += 0.5 * dt * self.getForce(other)  # this is illegal. could move scaling to getForce, that's dumb
         self.position += dt*self.velocity
         self.velocity += 0.5 * dt * self.getForce(other)  # right now this requires two function calls
 
@@ -90,5 +93,4 @@ class Planet:
 
         theta = dr.angle()
         force = G * self.mass * other.mass / dist ** 2
-        fx, fy = -Vector2D.create_from_angle(theta, force / self.mass)  # this feels wrong
-        return(fx, fy)
+        return -Vector2D.create_from_angle(theta, force / self.mass)  # this feels wrong

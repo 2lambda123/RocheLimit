@@ -5,7 +5,7 @@ from geometry import Vector2D
 
 # =========== START OF SIMULATION CODE ============
 
-(width, height) = (800, 800)
+(width, height) = (500, 500)
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption('Gravity Test')
 
