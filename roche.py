@@ -9,11 +9,12 @@ G = 0.2
 class Environment:
     """ Defines the boundary of a simulation and its properties """
 
-    def __init__(self, (width, height)):
+    def __init__(self, (width, height), dt=0.01):
         self.width = width
         self.height = height
         self.colour = (255, 255, 255)
         self.planets = []
+        self.dt = dt
 
     def addPlanets(self, n=1, **kargs):
         """ Add n planets with properties given by keyword arguments """
@@ -47,8 +48,8 @@ class Environment:
             # # Two planet functions get called here
             for planet2 in self.planets[i + 1:]:
             #     planet.attract(planet2)
-                planet.verlet(planet2)
-                planet2.verlet(planet)
+                planet.verlet(planet2, dt=self.dt)
+                planet2.verlet(planet, dt=self.dt)
 
 
 class Planet:
@@ -63,15 +64,17 @@ class Planet:
         # cube the radius for a sphere
         self.mass = density * size ** 3
         self.velocity = Vector2D.zero()
+        self.acceleration = Vector2D.zero()
         self.fixed = False
 
     def verlet(self, other, dt=0.01):
         if not self.fixed:
-            self.velocity += 0.5 * dt * self.getForce(other)
+            self.velocity += 0.5 * dt * self.acceleration
             self.position += dt*self.velocity
-            self.velocity += 0.5 * dt * self.getForce(other)  # right now this requires two function calls
+            self.acceleration = self.getGravityAcceleration(other)
+            self.velocity += 0.5 * dt * self.acceleration
 
-    def getForce(self, other):  # this isn't where this function should go
+    def getGravityAcceleration(self, other):  # this isn't where this function should go
         dr = self.position - other.position
         dist = dr.length()
 

@@ -9,7 +9,7 @@ from geometry import Vector2D
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption('Gravity Test')
 
-universe = Environment((width, height))
+universe = Environment((width, height), dt=0.5)
 universe.colour = (0,0,0)
 
 sun_radius = 50
@@ -18,7 +18,7 @@ sun.fixed = True
 sun.colour = (255, 255, 0)
 universe.planets.append(sun)
 
-planet = Planet((100, 400), 15, density=0.5)
+planet = Planet((100, 400), 15, density=0.1)
 planet.velocity = Vector2D(0, 5)
 planet.colour = (100, 100, 255)
 universe.planets.append(planet)
