@@ -18,28 +18,50 @@ sun.fixed = True
 sun.colour = (255, 255, 0)
 universe.planets.append(sun)
 
-planet = Planet((100, 400), 15, density=0.5)
-planet.velocity = Vector2D(0, 5)
+planet = Planet((100, 250), 15, density=0.1)
+planet.velocity = Vector2D(0, 12)
 planet.colour = (100, 100, 255)
 universe.planets.append(planet)
+
+dt = 0.01
 
 running = True
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                running = False
 
-    universe.update()
+    universe.update(dt)
     screen.fill(universe.colour)
 
     for p in universe.planets:
-        # p.verlet(p+1)
+
+        # ~~~~~ Planet Trail Funtime Code ~~~~~ #
+
+        # Appends the trail list with the particle's current position.
+        # Ideally should be called not every time for performance reasons, currently working on ways to solve this.
+        p.appendTrail(height)
+
+        # If the trail has more than one point (necessary to actually draw a line), draw the trail.
+        # Placed prior to the planet drawing code to draw the trail underneath the planet.
+        if len(p.trail) > 2:
+            pygame.draw.aalines(screen, p.line_colour, False, p.trail, 1)
+
         # Draws it so that (0,0) is the bottom left corner
         if p.size < 2:
             pygame.draw.rect(screen, p.colour, (int(p.position.x), height - int(p.position.y), 2, 2))
         else:
             pygame.draw.circle(screen, p.colour, (int(p.position.x), height - int(p.position.y)), int(p.size), 0)
 
+
+        
+
+
     pygame.display.flip()
+
+    # pygame.time.delay(int(dt * 1000))
 
 pygame.quit()  # IDLE interpreter friendly

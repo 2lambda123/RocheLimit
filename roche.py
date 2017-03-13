@@ -37,7 +37,7 @@ class Environment:
 
             self.planets.append(planet)
 
-    def update(self):
+    def update(self, dt=0.01):
         """  Calls particle functions """
 
         for i, planet in enumerate(self.planets):
@@ -47,8 +47,8 @@ class Environment:
             # # Two planet functions get called here
             for planet2 in self.planets[i + 1:]:
             #     planet.attract(planet2)
-                planet.verlet(planet2)
-                planet2.verlet(planet)
+                planet.verlet(planet2, dt)
+                planet2.verlet(planet, dt)
 
 
 class Planet:
@@ -58,20 +58,34 @@ class Planet:
         self.position = Vector2D(x, y)
         self.size = size
         self.colour = (255, 255, 255)
+        self.line_colour = (120, 255, 120)
         self.thickness = 0
         self.density = density
         # cube the radius for a sphere
         self.mass = density * size ** 3
         self.velocity = Vector2D.zero()
+        self.acceleration = Vector2D.zero()
         self.fixed = False
+        self.trail = []
+        self.maxTrailLength = 15000
+
+    # Appends the particle's current position onto the trail list when called.
+    # If the trail has exceeded a certain length, the oldest values are deleted.
+    def appendTrail(self, height):
+        self.trail.append([self.position.x, height - self.position.y])
+
+        if len(self.trail) > self.maxTrailLength:
+            self.trail.pop(0)
+
 
     def verlet(self, other, dt=0.01):
         if not self.fixed:
-            self.velocity += 0.5 * dt * self.getForce(other)
+            self.velocity += 0.5 * dt * self.acceleration
             self.position += dt*self.velocity
-            self.velocity += 0.5 * dt * self.getForce(other)  # right now this requires two function calls
+            self.acceleration = self.getGravityAcceleration(other)
+            self.velocity += 0.5 * dt * self.acceleration
 
-    def getForce(self, other):  # this isn't where this function should go
+    def getGravityAcceleration(self, other):  # this isn't where this function should go
         dr = self.position - other.position
         dist = dr.length()
 
