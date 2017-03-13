@@ -18,15 +18,25 @@ sun.fixed = True
 sun.colour = (255, 255, 0)
 universe.planets.append(sun)
 
-planet = Planet((100, 250), 15, density=0.1)
-planet.velocity = Vector2D(0, 12)
+planet = Planet((25, 250), 15, density=0.1)
+planet.velocity = Vector2D(0, 7)
 planet.colour = (100, 100, 255)
 universe.planets.append(planet)
 
+# Time between simulation steps, in seconds?
 dt = 0.01
+
+# Keeps track of times the loop has run
+i = 0
+
+# Time between drawing the trail step in frames. Large values lead to geodesic-esque patterns!
+timeStep = 10
 
 running = True
 while running:
+
+    i += 1
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -42,13 +52,20 @@ while running:
         # ~~~~~ Planet Trail Funtime Code ~~~~~ #
 
         # Appends the trail list with the particle's current position.
-        # Ideally should be called not every time for performance reasons, currently working on ways to solve this.
-        p.appendTrail(height)
+        # For whatever reason, if these two ifs are compiled into one, everything breaks.
+        # Hence the double if. 
+        if i == timeStep:
+            p.appendTrail(height)
+        if i > timeStep:
+            i = 0
 
         # If the trail has more than one point (necessary to actually draw a line), draw the trail.
         # Placed prior to the planet drawing code to draw the trail underneath the planet.
         if len(p.trail) > 2:
             pygame.draw.aalines(screen, p.line_colour, False, p.trail, 1)
+
+        # ~~~~~ End Planet Trail Funtime Code ~~~~~ #
+
 
         # Draws it so that (0,0) is the bottom left corner
         if p.size < 2:
