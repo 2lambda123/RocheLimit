@@ -12,29 +12,30 @@ pygame.display.set_caption('Gravity Test')
 universe = Environment((width, height))
 universe.colour = (0,0,0)
 
-# Setting up pixel-to-metre conversion.
-# Assuming that this is the Sun-Earth scenario
+# Setting up pixel-to-kilometre conversion.
+# Assuming that this is the Earth-Moon scenario
 
-# 1 AU = width/2 - 25
-# Hence we will work in AU, as it keeps numbers fairly small
 
-AU = (width/2 - 25)
+# 384748 = width/2 - 25
+# Hence we will work in km
+
+km = (width/2 - 25)/384748
 
 # This is real life, things are small
-sun_radius = 0.00463672*AU
-sun = Planet((width/2, height/2), sun_radius, density=1.408)
-sun.fixed = True
-sun.colour = (255, 255, 0)
-universe.planets.append(sun)
+earth_radius = 6371*km
+earth = Planet((width/2, height/2), earth_radius, density=5.514)
+earth.fixed = True
+earth.colour = (255, 255, 0)
+universe.planets.append(earth)
 
-
-planet = Planet((25, height/2), 0.000042473*AU, density=5.514)
-planet.velocity = Vector2D(0, 7)
-planet.colour = (100, 100, 255)
-universe.planets.append(planet)
+moon_radius = 1737.5*km
+moon = Planet((25, height/2), moon_radius, density=5.514)
+moon.velocity = Vector2D(0, 7)
+moon.colour = (100, 100, 255)
+universe.planets.append(moon)
 
 # Time between simulation steps, in seconds?
-dt = 0.01
+dt = 0.5
 
 # Keeps track of times the loop has run
 i = 0
