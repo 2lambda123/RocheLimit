@@ -58,6 +58,7 @@ class Planet:
         self.position = Vector2D(x, y)
         self.size = size
         self.colour = (255, 255, 255)
+        self.line_colour = (120, 255, 120)
         self.thickness = 0
         self.density = density
         # cube the radius for a sphere
@@ -65,6 +66,17 @@ class Planet:
         self.velocity = Vector2D.zero()
         self.acceleration = Vector2D.zero()
         self.fixed = False
+        self.trail = []
+        self.maxTrailLength = 15000
+
+    # Appends the particle's current position onto the trail list when called.
+    # If the trail has exceeded a certain length, the oldest values are deleted.
+    def appendTrail(self, height):
+        self.trail.append([self.position.x, height - self.position.y])
+
+        if len(self.trail) > self.maxTrailLength:
+            self.trail.pop(0)
+
 
     def verlet(self, other, dt=0.01):
         if not self.fixed:

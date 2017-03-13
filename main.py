@@ -38,14 +38,30 @@ while running:
     screen.fill(universe.colour)
 
     for p in universe.planets:
+
+        # ~~~~~ Planet Trail Funtime Code ~~~~~ #
+
+        # Appends the trail list with the particle's current position.
+        # Ideally should be called not every time for performance reasons, currently working on ways to solve this.
+        p.appendTrail(height)
+
+        # If the trail has more than one point (necessary to actually draw a line), draw the trail.
+        # Placed prior to the planet drawing code to draw the trail underneath the planet.
+        if len(p.trail) > 2:
+            pygame.draw.aalines(screen, p.line_colour, False, p.trail, 1)
+
         # Draws it so that (0,0) is the bottom left corner
         if p.size < 2:
             pygame.draw.rect(screen, p.colour, (int(p.position.x), height - int(p.position.y), 2, 2))
         else:
             pygame.draw.circle(screen, p.colour, (int(p.position.x), height - int(p.position.y)), int(p.size), 0)
 
+
+        
+
+
     pygame.display.flip()
 
-    pygame.time.delay(int(dt * 1000))
+    # pygame.time.delay(int(dt * 1000))
 
 pygame.quit()  # IDLE interpreter friendly
