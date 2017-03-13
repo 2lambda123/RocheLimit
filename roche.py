@@ -9,12 +9,11 @@ G = 0.2
 class Environment:
     """ Defines the boundary of a simulation and its properties """
 
-    def __init__(self, (width, height), dt=0.01):
+    def __init__(self, (width, height)):
         self.width = width
         self.height = height
         self.colour = (255, 255, 255)
         self.planets = []
-        self.dt = dt
 
     def addPlanets(self, n=1, **kargs):
         """ Add n planets with properties given by keyword arguments """
@@ -38,7 +37,7 @@ class Environment:
 
             self.planets.append(planet)
 
-    def update(self):
+    def update(self, dt=0.01):
         """  Calls particle functions """
 
         for i, planet in enumerate(self.planets):
@@ -48,8 +47,8 @@ class Environment:
             # # Two planet functions get called here
             for planet2 in self.planets[i + 1:]:
             #     planet.attract(planet2)
-                planet.verlet(planet2, dt=self.dt)
-                planet2.verlet(planet, dt=self.dt)
+                planet.verlet(planet2, dt)
+                planet2.verlet(planet, dt)
 
 
 class Planet:

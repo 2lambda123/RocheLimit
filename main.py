@@ -9,7 +9,7 @@ from geometry import Vector2D
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption('Gravity Test')
 
-universe = Environment((width, height), dt=0.5)
+universe = Environment((width, height))
 universe.colour = (0,0,0)
 
 sun_radius = 50
@@ -18,10 +18,12 @@ sun.fixed = True
 sun.colour = (255, 255, 0)
 universe.planets.append(sun)
 
-planet = Planet((100, 400), 15, density=0.1)
-planet.velocity = Vector2D(0, 5)
+planet = Planet((100, 250), 15, density=0.1)
+planet.velocity = Vector2D(0, 12)
 planet.colour = (100, 100, 255)
 universe.planets.append(planet)
+
+dt = 0.01
 
 running = True
 while running:
@@ -29,11 +31,10 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    universe.update()
+    universe.update(dt)
     screen.fill(universe.colour)
 
     for p in universe.planets:
-        # p.verlet(p+1)
         # Draws it so that (0,0) is the bottom left corner
         if p.size < 2:
             pygame.draw.rect(screen, p.colour, (int(p.position.x), height - int(p.position.y), 2, 2))
@@ -41,5 +42,7 @@ while running:
             pygame.draw.circle(screen, p.colour, (int(p.position.x), height - int(p.position.y)), int(p.size), 0)
 
     pygame.display.flip()
+
+    pygame.time.delay(int(dt * 1000))
 
 pygame.quit()  # IDLE interpreter friendly
