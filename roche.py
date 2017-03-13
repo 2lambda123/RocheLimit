@@ -3,7 +3,7 @@ import random
 from geometry import Vector2D
 
 # Gravitational Constant
-G = 0.2
+G = (6.674*10**-11)/(1.5*10**11)**3
 
 
 class Environment:

@@ -5,20 +5,30 @@ from geometry import Vector2D
 
 # =========== START OF SIMULATION CODE ============
 
-(width, height) = (500, 500)
+(width, height) = (700, 700)
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption('Gravity Test')
 
 universe = Environment((width, height))
 universe.colour = (0,0,0)
 
-sun_radius = 50
-sun = Planet((width/2, height/2), sun_radius, density=1)
+# Setting up pixel-to-metre conversion.
+# Assuming that this is the Sun-Earth scenario
+
+# 1 AU = width/2 - 25
+# Hence we will work in AU, as it keeps numbers fairly small
+
+AU = (width/2 - 25)
+
+# This is real life, things are small
+sun_radius = 0.00463672*AU
+sun = Planet((width/2, height/2), sun_radius, density=1.408)
 sun.fixed = True
 sun.colour = (255, 255, 0)
 universe.planets.append(sun)
 
-planet = Planet((25, 250), 15, density=0.1)
+
+planet = Planet((25, height/2), 0.000042473*AU, density=5.514)
 planet.velocity = Vector2D(0, 7)
 planet.colour = (100, 100, 255)
 universe.planets.append(planet)
