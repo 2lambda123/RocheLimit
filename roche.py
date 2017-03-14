@@ -3,7 +3,7 @@ import random
 from geometry import Vector2D
 
 # Gravitational Constant
-G = (6.674*10**-11)/(1.5*10**11)**3
+G = (6.674*10**-11)/(384748)**3
 
 
 class Environment:
@@ -54,20 +54,18 @@ class Environment:
 class Planet:
     """ A circular planet with a velocity, size and density """
 
-    def __init__(self, (x, y), size, density=1):
+    def __init__(self, (x, y), size, mass):
         self.position = Vector2D(x, y)
         self.size = size
         self.colour = (255, 255, 255)
         self.line_colour = (120, 255, 120)
         self.thickness = 0
-        self.density = density
-        # cube the radius for a sphere
-        self.mass = density * size ** 3
+        self.mass = mass
         self.velocity = Vector2D.zero()
         self.acceleration = Vector2D.zero()
         self.fixed = False
         self.trail = []
-        self.maxTrailLength = 15000
+        self.maxTrailLength = 50
 
     # Appends the particle's current position onto the trail list when called.
     # If the trail has exceeded a certain length, the oldest values are deleted.
@@ -90,5 +88,6 @@ class Planet:
         dist = dr.length()
 
         theta = dr.angle()
+
         force = G * self.mass * other.mass / dist ** 2
         return -Vector2D.create_from_angle(theta, force / self.mass)  # this feels wrong

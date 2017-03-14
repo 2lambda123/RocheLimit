@@ -22,16 +22,18 @@ universe.colour = (0,0,0)
 km = (width/2 - 25)/384748
 
 # This is real life, things are small
-earth_radius = 6371*km
-earth = Planet((width/2, height/2), earth_radius, density=5.514)
+earth_radius = 40
+earth_mass = 10**30 # kg, approx
+earth = Planet((width/2, height/2), earth_radius, earth_mass)
 earth.fixed = True
-earth.colour = (255, 255, 0)
+earth.colour = (100, 100, 255)
 universe.planets.append(earth)
 
-moon_radius = 1737.5*km
-moon = Planet((25, height/2), moon_radius, density=5.514)
-moon.velocity = Vector2D(0, 7)
-moon.colour = (100, 100, 255)
+moon_radius = 10
+moon_mass = 10**29 #kg, approx
+moon = Planet((25, height/2), moon_radius, moon_mass)
+moon.velocity = Vector2D(0, 1)
+moon.colour = (100, 100, 100)
 universe.planets.append(moon)
 
 # Time between simulation steps, in seconds?
@@ -41,7 +43,7 @@ dt = 0.5
 i = 0
 
 # Time between drawing the trail step in frames. Large values lead to geodesic-esque patterns!
-timeStep = 10
+timeStep = 5
 
 running = True
 while running:
