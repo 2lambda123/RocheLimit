@@ -65,7 +65,7 @@ class Planet:
         self.acceleration = Vector2D.zero()
         self.fixed = False
         self.trail = []
-        self.maxTrailLength = 50
+        self.maxTrailLength = 200
 
     # Appends the particle's current position onto the trail list when called.
     # If the trail has exceeded a certain length, the oldest values are deleted.
