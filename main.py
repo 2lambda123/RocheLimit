@@ -7,6 +7,7 @@ from geometry import Vector2D
 
 (width, height) = (500, 500)
 screen = pygame.display.set_mode((width, height))
+pygame.display.set_icon(pygame.image.load('sigurdson_kris.png'))
 pygame.display.set_caption('Gravity Test')
 
 universe = Environment((width, height))
@@ -72,9 +73,6 @@ while running:
             pygame.draw.rect(screen, p.colour, (int(p.position.x), height - int(p.position.y), 2, 2))
         else:
             pygame.draw.circle(screen, p.colour, (int(p.position.x), height - int(p.position.y)), int(p.size), 0)
-
-
-        
 
 
     pygame.display.flip()
