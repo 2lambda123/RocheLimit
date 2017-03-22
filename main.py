@@ -91,7 +91,9 @@ while running:
 
     for p in universe.planets:
 
-        # ~~~~~ Planet Trail Funtime Code ~~~~~ #
+        # ~~~~~ Planet Trail Drawing Code ~~~~~ #
+
+        # Placed prior to the planet drawing code to draw the trail underneath the planet.
 
         # Appends the trail list with the particle's current position.
         # For whatever reason, if these two ifs are compiled into one, everything breaks.
@@ -101,16 +103,11 @@ while running:
         if i > timeStep:
             i = 0
 
-        # If the trail has more than one point (necessary to actually draw a line), draw the trail.
-        # Placed prior to the planet drawing code to draw the trail underneath the planet.
-        print((p.trail))
-        if len(p.trail) > 2:
-            pygame.draw.aalines(screen, p.line_colour, False, p.trail, 1)
-            for j in p.trail:
-                p.trail.pop(j)
-            pygame.draw.aalines(screen, p.line_colour, False, p.trail, 2)
+        # If the trail has more than one point (necessary to actually make a line), draw the trail.
+        if len(p.trail) > 1:
+            pygame.draw.aalines(screen, p.line_colour, False, p.trail)
 
-        # ~~~~~ End Planet Trail Funtime Code ~~~~~ #
+        # ~~~~~ End Planet Trail Drawing Code ~~~~~ #
 
 
         # Draws it so that (0,0) is the bottom left corner

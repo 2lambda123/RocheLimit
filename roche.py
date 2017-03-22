@@ -65,13 +65,15 @@ class Planet:
         self.acceleration = Vector2D.zero()
         self.fixed = False
         self.trail = []
-        self.maxTrailLength = 200
+        self.maxTrailLength = 750
 
-    # Appends the particle's current position onto the trail list when called.
-    # If the trail has exceeded a certain length, the oldest values are deleted.
+    
+    # Used to find the points necessary to draw the planet trails. 
     def appendTrail(self, height):
+        # Appends the particle's current position onto the trail list when called.
         self.trail.append([self.position.x, height - self.position.y])
 
+        # If the trail has exceeded a certain length, the oldest values are deleted.
         if len(self.trail) > self.maxTrailLength:
             self.trail.pop(0)
 
