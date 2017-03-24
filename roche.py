@@ -3,7 +3,9 @@ import random
 from geometry import Vector2D
 
 # Gravitational Constant
-G = (6.674*10**-11)/(384748)**3
+# Converted to pixels using the conversion factor from main.
+# There's likely some elegant way of passing it between the programs.
+G = (6.674*10**-11)/(1183000)**3 # m^3 / kg s^2
 
 
 class Environment:
@@ -78,10 +80,17 @@ class Planet:
             self.trail.pop(0)
 
 
+    def findOutline(self, height, scale):
+        edge = []
+        for n in range(0, 36):
+            edge.append([self.position.x + (self.size - scale) * math.cos(math.pi * n / 18), height - (self.position.y + (self.size - scale) * math.sin(math.pi * n / 18))])
+        return edge
+
+
     def verlet(self, other, dt=0.01):
         if not self.fixed:
             self.velocity += 0.5 * dt * self.acceleration
-            self.position += dt*self.velocity
+            self.position += dt * self.velocity
             self.acceleration = self.getGravityAcceleration(other)
             self.velocity += 0.5 * dt * self.acceleration
 
@@ -91,5 +100,15 @@ class Planet:
 
         theta = dr.angle()
 
-        force = G * self.mass * other.mass / dist ** 2
-        return -Vector2D.create_from_angle(theta, force / self.mass)  # this feels wrong
+        # Implementing Sigurdson's suggestion for constant force for particles inside others.
+        if dist < other.size + self.size:
+            force = G * self.mass * other.mass / other.size ** 2
+            # Also reduces the velocity, for shits & gigs.
+            self.velocity *= 0.9
+
+            # Obviously replace this in the future when we have multiple particles working, 
+            # I just did it because I was tired of planets shooting off to infinity.
+        else:
+            force = G * self.mass * other.mass / dist ** 2
+
+        return - Vector2D.create_from_angle(theta, force / self.mass)  # this feels wrong

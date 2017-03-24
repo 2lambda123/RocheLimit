@@ -7,19 +7,22 @@ from geometry import Vector2D
 
 (width, height) = (700, 700)
 screen = pygame.display.set_mode((width, height))
+pygame.display.set_icon(pygame.image.load('sigurdson_kris.png'))
 pygame.display.set_caption('Gravity Test')
+
+clock = pygame.time.Clock()
 
 universe = Environment((width, height))
 universe.colour = (0,0,0)
 
-# Setting up pixel-to-kilometre conversion.
+# Setting up pixel-to-metre conversion.
 # Assuming that this is the Earth-Moon scenario
 
 # We'll use the height of the Moon's orbit as our base 'kilometre unit' by which we multiply all length values by.
-# 384748 = width/2 - 25
+# 384 748 000 metres = width/2 - 25 pixels
 
-km = (float(width)/2 - 25.)/384748.
-
+m = 405400000./(float(width) / 2 - 25.)
+# This is what we multiply to every distance in pixels to convert it to metres.
 
 # Orbit Paramatizer
 # A tool such that we can specify initial orbit requirements and it will provide the Moon with a velocity and initial height to make said orbit.
@@ -29,10 +32,10 @@ km = (float(width)/2 - 25.)/384748.
 # Input Coordinates
 
 # The apoapsis (apogee in Earth-Moon system) is the highest point in an orbit, input in kilometres from centre body's core.
-apoapsis = 405400.
+apoapsis = 405400000.
 
 # The periapsis (perogee in Earth-Moon system) is the lowest point in an orbit, input in kilometres from centre body's core.
-periapsis = 362600.
+periapsis = 362600000.
 
 
 # Parametarize Orbit
@@ -40,12 +43,12 @@ periapsis = 362600.
 e = ( apoapsis - periapsis ) / ( periapsis + apoapsis )
 print e
 # Find semi-major axis
-a = km * ( periapsis + apoapsis ) / 2
+a = m * ( periapsis + apoapsis ) / 2
 print a
 
 
 
-
+print (1, 1) + (2, 2)
 
 
 
@@ -61,12 +64,12 @@ universe.planets.append(earth)
 moon_radius = 10
 moon_mass = 7.348*10**22 # kg
 moon = Planet((25, height/2), moon_radius, moon_mass)
-moon.velocity = Vector2D(0, 0.004)
+moon.velocity = Vector2D(0, 964/m) #m/s)
 moon.colour = (100, 100, 100)
 universe.planets.append(moon)
 
-# Time between simulation steps, in seconds?
-dt = 10
+# Time between simulation steps
+dt = 100
 
 # Keeps track of times the loop has run
 i = 0
@@ -88,6 +91,7 @@ while running:
 
     universe.update(dt)
     screen.fill(universe.colour)
+
 
     for p in universe.planets:
 
@@ -114,10 +118,25 @@ while running:
         if p.size < 2:
             pygame.draw.rect(screen, p.colour, (int(p.position.x), height - int(p.position.y), 2, 2))
         else:
+            
+            # Draws pretty anti-aliased outlines for each body.
+            pygame.draw.aalines(screen, p.colour, True, p.findOutline(height, 1), 1)
+            pygame.draw.aalines(screen, p.colour, True, p.findOutline(height, 1.5), 1)
+            pygame.draw.aalines(screen, p.colour, True, p.findOutline(height, -0.5), 1)
+            # pygame.draw.aalines(screen, p.colour, True, p.findOutline(height, 0.25), 1)
+            pygame.draw.aalines(screen, p.colour, True, p.findOutline(height, 0.5), 1)
+            # pygame.draw.aalines(screen, p.colour, True, p.findOutline(height, 0.75), 1)
+            pygame.draw.aalines(screen, p.colour, True, p.findOutline(height, 0), 1)
+
             pygame.draw.circle(screen, p.colour, (int(p.position.x), height - int(p.position.y)), int(p.size), 0)
 
 
-        
+
+ 
+    # # Clock funtimes
+    # clock.tick()
+
+    # print clock.get_fps()
 
 
     pygame.display.flip()
