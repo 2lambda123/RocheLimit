@@ -5,74 +5,97 @@ from geometry import Vector2D
 
 # =========== START OF SIMULATION CODE ============
 
-(width, height) = (700, 700)
+(width, height) = (1300, 700)
 screen = pygame.display.set_mode((width, height))
+pygame.display.set_icon(pygame.image.load('sigurdson_kris.png'))
 pygame.display.set_caption('Gravity Test')
+
+pygame.font.init()
+font = pygame.font.SysFont('Sans', 60)
+
+clock = pygame.time.Clock()
 
 universe = Environment((width, height))
 universe.colour = (0,0,0)
 
-# Setting up pixel-to-kilometre conversion.
-# Assuming that this is the Earth-Moon scenario
 
-# We'll use the height of the Moon's orbit as our base 'kilometre unit' by which we multiply all length values by.
-# 384748 = width/2 - 25
+# Input Coordinates for Moon's orbit
+# Essentially the 'user input' for this simulation.
+# Earth's radius is 6 371 000 m for reference.
 
-km = (float(width)/2 - 25.)/384748.
+# May transition to scientific notation in the future...
+
+# The apoapsis (apogee in Earth-Moon system) is the highest point in an orbit, 
+# input in kilometres from centre body's core. The Moon's apogee IRL is 405400000 m.
+apoapsis = 40540000.
+
+# The periapsis (perogee in Earth-Moon system) is the lowest point in an orbit, input in kilometres from centre body's core.
+# IRL the Moon's perigee is 362600000 m.
+periapsis = 362600000.
+
+# Because I have definitely input a smaller value for the apoapsis before.
+if apoapsis < periapsis:
+    apoapsis, periapsis = periapsis, apoapsis
+
+
+# Pixel-to-Metre conversion.
+
+# As we already defined the apoapsis, we'll use its height as our base 
+# 'kilometre unit' by which we can convert to and from pixels to metres at will.
+
+m = (apoapsis + periapsis)/(float(width) - 50.) # in m / pixel
+
+
+# I have the if statement there to check if the height of the window will be too
+# small for the orbit.
+
+print 2 * (apoapsis * periapsis)**0.5/m, ' pixels'
+print 2 * (apoapsis * periapsis)**0.5, ' metres'
+
+if 2 * (apoapsis * periapsis)**0.5/m > height - 50:
+    m = 2 * (apoapsis * periapsis)**0.5 / float(height - 50)
+    
 
 
 # Orbit Paramatizer
 # A tool such that we can specify initial orbit requirements and it will provide the Moon with a velocity and initial height to make said orbit.
 # We'll assume that the Moon's starting location is at the apoapsis.
 
-
-# Input Coordinates
-
-# The apoapsis (apogee in Earth-Moon system) is the highest point in an orbit, input in kilometres from centre body's core.
-apoapsis = 405400.
-
-# The periapsis (perogee in Earth-Moon system) is the lowest point in an orbit, input in kilometres from centre body's core.
-periapsis = 362600.
+# This G is in pixels
+G = (6.674*10**-11)/m**3
 
 
-# Parametarize Orbit
-# Find eccentricity of orbit
-e = ( apoapsis - periapsis ) / ( periapsis + apoapsis )
-print e
-# Find semi-major axis
-a = km * ( periapsis + apoapsis ) / 2
-print a
-
-
-
-
-
-
-
-# The Earth and Moon aren't really this large wrt each other, but I made them big so that we can see them.
-# Go play Orbiter for excessive physical accuracy.
-earth_radius = 40
+earth_radius = 6371000 / m # in metres, converted to pixels through m
 earth_mass = 5.972*10**24 # kg
-earth = Planet((width/2, height/2), earth_radius, earth_mass)
+earth = Planet((25 + apoapsis/m, height/2), earth_radius, earth_mass)
+print 'Location of Earth: ', (25 + apoapsis/m, height/2)
 earth.fixed = True
-earth.colour = (100, 100, 255)
+earth.colour = (100, 100, 255) # baby blue
 universe.planets.append(earth)
 
-moon_radius = 10
+
+
+# Parametarize Moon's Orbit
+# Find necessary initial velocity to produce orbit from defined apoapsis and periapsis.
+v = ((2 * m**3 * G * earth_mass) * ((1 / apoapsis) - (1 / ( periapsis + apoapsis ))))**0.5
+print v, ' m/s'
+
+moon_radius = 1737500 / m # in km, converted to pixels
 moon_mass = 7.348*10**22 # kg
 moon = Planet((25, height/2), moon_radius, moon_mass)
-moon.velocity = Vector2D(0, 0.004)
+moon.velocity = Vector2D(0, - v/m) #m/s)
 moon.colour = (100, 100, 100)
 universe.planets.append(moon)
 
-# Time between simulation steps, in seconds?
-dt = 10
+# Time between simulation steps, increase to increase speed of moon
+dt = 50
 
 # Keeps track of times the loop has run
 i = 0
 
 # Time between drawing the trail step in frames. Large values lead to geodesic-esque patterns!
-timeStep = 50
+timeStep = 10
+
 
 running = True
 while running:
@@ -86,8 +109,9 @@ while running:
             if event.key == pygame.K_ESCAPE:
                 running = False
 
-    universe.update(dt)
+    universe.update(G, dt)
     screen.fill(universe.colour)
+
 
     for p in universe.planets:
 
@@ -109,15 +133,24 @@ while running:
 
         # ~~~~~ End Planet Trail Drawing Code ~~~~~ #
 
+        # I may have got text working
+        death = moon.areWeDead(earth)
+        if death == True:
+            screen.blit(font.render('YOU KILLED', True, (255,0,0), (255,255,255)), (100, 400))
+            screen.blit(font.render('EVERYONE', True, (255,0,0), (255,255,255)), (110, 465))
+
 
         # Draws it so that (0,0) is the bottom left corner
         if p.size < 2:
             pygame.draw.rect(screen, p.colour, (int(p.position.x), height - int(p.position.y), 2, 2))
         else:
+            
+            # Draws pretty anti-aliased outlines for each body.
+            # There are two lines to make the outline a bit thicker.
+            pygame.draw.aalines(screen, p.colour, True, p.findOutline(height, 1), 1)
+            pygame.draw.aalines(screen, p.colour, True, p.findOutline(height, 0), 1)
+
             pygame.draw.circle(screen, p.colour, (int(p.position.x), height - int(p.position.y)), int(p.size), 0)
-
-
-        
 
 
     pygame.display.flip()
