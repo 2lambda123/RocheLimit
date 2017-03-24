@@ -20,14 +20,18 @@ universe.colour = (0,0,0)
 
 
 # Input Coordinates for Moon's orbit
+# Essentially the 'user input' for this simulation.
+# Earth's radius is 6 371 000 m for reference.
+
+# May transition to scientific notation in the future...
 
 # The apoapsis (apogee in Earth-Moon system) is the highest point in an orbit, input in kilometres from centre body's core.
 # IRL the Moon's apogee is 405400000 m.
-apoapsis = 100000000.
+apoapsis = 405400000.
 
 # The periapsis (perogee in Earth-Moon system) is the lowest point in an orbit, input in kilometres from centre body's core.
 # IRL the Moon's perigee is 362600000 m.
-periapsis = 362600.
+periapsis = 362600000.
 
 # Because I have definitely input a smaller value for the apoapsis before
 if apoapsis < periapsis:
@@ -37,49 +41,45 @@ if apoapsis < periapsis:
 
 
 
-# Setting up pixel-to-metre conversion.
-# Assuming that this is the Earth-Moon scenario
+# Pixel-to-Metre conversion.
 
-# We'll use the height of the Moon's orbit as our base 'kilometre unit' by which we multiply all length values by.
-# 384 748 000 metres = width/2 - 25 pixels
+# As we already defined the apoapsis, we'll use its height as our base 'kilometre unit',
+# by which we can convert to and from pixels to metres at will.
 
 m = apoapsis/(float(width) / 2 - 25.)
-print m
 # This is what we multiply to every distance in pixels to convert it to metres.
+
 
 # Orbit Paramatizer
 # A tool such that we can specify initial orbit requirements and it will provide the Moon with a velocity and initial height to make said orbit.
 # We'll assume that the Moon's starting location is at the apoapsis.
 
-
 # This G is in pixels
 G = (6.674*10**-11)/m**3
 
 
-# The Earth and Moon aren't really this large wrt each other, but I made them big so that we can see them.
-# Go play Orbiter for excessive physical accuracy.
 earth_radius = 6371000 / m # in metres, converted to pixels through m
 earth_mass = 5.972*10**24 # kg
 earth = Planet((width/2, height/2), earth_radius, earth_mass)
 earth.fixed = True
-earth.colour = (100, 100, 255)
+earth.colour = (100, 100, 255) # baby blue
 universe.planets.append(earth)
 
 
 
 # Parametarize Moon's Orbit
-# Find semi-major axis
+# Find semi-major axis.
 a = ( periapsis + apoapsis ) / 2
 print a
 
-# Find necessary initial velocity to produce said orbit
-v = ((m**3 * G * earth_mass) * ((2 / apoapsis) - (1 / a)))**0.5
+# Find necessary initial velocity to produce orbit from defined apoapsis and periapsis.
+v = ((2 * m**3 * G * earth_mass) * ((1 / apoapsis) - (1 / ( periapsis + apoapsis ))))**0.5
 print v, ' m/s'
 
-moon_radius = 1737500 / m
+moon_radius = 1737500 / m # in km, converted to pixels
 moon_mass = 7.348*10**22 # kg
 moon = Planet((25, height/2), moon_radius, moon_mass)
-moon.velocity = Vector2D(0, v/m) #m/s)
+moon.velocity = Vector2D(0, - v/m) #m/s)
 moon.colour = (100, 100, 100)
 universe.planets.append(moon)
 
@@ -129,6 +129,7 @@ while running:
 
         # ~~~~~ End Planet Trail Drawing Code ~~~~~ #
 
+        # I may have got text working
         death = moon.areWeDead(earth)
         if death == True:
             screen.blit(font.render('YOU KILLED', True, (255,0,0), (255,255,255)), (100, 400))

@@ -4,9 +4,8 @@ from geometry import Vector2D
 
 # Gravitational Constant
 # Converted to pixels using the conversion factor from main.
-# There's likely some elegant way of passing it between the programs.
 # G = (6.674*10**-11)/(124738.461538)**3 # m^3 / kg s^2
-
+# I am currently doing a hacky way of transferring G through, so if there's a better way, please let me know!
 
 class Environment:
     """ Defines the boundary of a simulation and its properties """
