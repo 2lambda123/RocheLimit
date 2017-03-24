@@ -18,6 +18,10 @@ clock = pygame.time.Clock()
 universe = Environment((width, height))
 universe.colour = (0,0,0)
 
+# Defines distance from the sides of the screen the orbit can be, in pixels.
+hmargin = 25
+vmargin = 25
+
 
 # Input Coordinates for Moon's orbit
 # Essentially the 'user input' for this simulation.
@@ -26,12 +30,12 @@ universe.colour = (0,0,0)
 # May transition to scientific notation in the future...
 
 # The apoapsis (apogee in Earth-Moon system) is the highest point in an orbit, 
-# input in kilometres from centre body's core. The Moon's apogee IRL is 405400000 m.
-apoapsis = 40540000.
+# input in metres from centre body's core. The Moon's apogee IRL is 4.054 * 10**8 m.
+apoapsis = 1.00 * 10**8
 
-# The periapsis (perogee in Earth-Moon system) is the lowest point in an orbit, input in kilometres from centre body's core.
-# IRL the Moon's perigee is 362600000 m.
-periapsis = 362600000.
+# The periapsis (perigee in Earth-Moon system) is the lowest point in an orbit, 
+# input in metres from centre body's core. The Moon's perigee IRL is 3.626 * 10**8 m.
+periapsis = 1.00 * 10**7
 
 # Because I have definitely input a smaller value for the apoapsis before.
 if apoapsis < periapsis:
@@ -43,23 +47,18 @@ if apoapsis < periapsis:
 # As we already defined the apoapsis, we'll use its height as our base 
 # 'kilometre unit' by which we can convert to and from pixels to metres at will.
 
-m = (apoapsis + periapsis)/(float(width) - 50.) # in m / pixel
+
+m = (apoapsis + periapsis)/(float(width - 2 * hmargin)) # in m / pixel
 
 
 # I have the if statement there to check if the height of the window will be too
-# small for the orbit.
+# small for the orbit. The program then adjusts the horizontal margin to fit
+# properly 
 
-print 2 * (apoapsis * periapsis)**0.5/m, ' pixels'
-print 2 * (apoapsis * periapsis)**0.5, ' metres'
-
-if 2 * (apoapsis * periapsis)**0.5/m > height - 50:
-    m = 2 * (apoapsis * periapsis)**0.5 / float(height - 50)
+if 2 * (apoapsis * periapsis)**0.5/m > height - 2 * vmargin:
+    m = 2 * (apoapsis * periapsis)**0.5 / float(height - 2 * vmargin)
+    hmargin = abs((width - (apoapsis + periapsis)/ m )/2)
     
-
-
-# Orbit Paramatizer
-# A tool such that we can specify initial orbit requirements and it will provide the Moon with a velocity and initial height to make said orbit.
-# We'll assume that the Moon's starting location is at the apoapsis.
 
 # This G is in pixels
 G = (6.674*10**-11)/m**3
@@ -67,23 +66,26 @@ G = (6.674*10**-11)/m**3
 
 earth_radius = 6371000 / m # in metres, converted to pixels through m
 earth_mass = 5.972*10**24 # kg
-earth = Planet((25 + apoapsis/m, height/2), earth_radius, earth_mass)
-print 'Location of Earth: ', (25 + apoapsis/m, height/2)
+earth = Planet((hmargin + (apoapsis / m), height/2), earth_radius, earth_mass)
 earth.fixed = True
 earth.colour = (100, 100, 255) # baby blue
 universe.planets.append(earth)
 
 
 
-# Parametarize Moon's Orbit
-# Find necessary initial velocity to produce orbit from defined apoapsis and periapsis.
-v = ((2 * m**3 * G * earth_mass) * ((1 / apoapsis) - (1 / ( periapsis + apoapsis ))))**0.5
-print v, ' m/s'
-
 moon_radius = 1737500 / m # in km, converted to pixels
 moon_mass = 7.348*10**22 # kg
-moon = Planet((25, height/2), moon_radius, moon_mass)
-moon.velocity = Vector2D(0, - v/m) #m/s)
+moon = Planet((hmargin, height/2), moon_radius, moon_mass)
+
+
+# Based on the periapsis and apoapsis from earlier, this will provide the Moon
+# with an initial velocity to make said orbit. We'll assume that the Moon's
+# starting location is at the apoapsis, on the left side of the screen.
+
+v = ((2 * m**3 * G * (earth_mass + moon_mass )) * \
+    ((1 / apoapsis) - (1 / (periapsis + apoapsis))))**0.5
+
+moon.velocity = Vector2D(0, - v/m) #m/s
 moon.colour = (100, 100, 100)
 universe.planets.append(moon)
 
@@ -134,8 +136,7 @@ while running:
         # ~~~~~ End Planet Trail Drawing Code ~~~~~ #
 
         # I may have got text working
-        death = moon.areWeDead(earth)
-        if death == True:
+        if moon.areWeDead(earth) == True:
             screen.blit(font.render('YOU KILLED', True, (255,0,0), (255,255,255)), (100, 400))
             screen.blit(font.render('EVERYONE', True, (255,0,0), (255,255,255)), (110, 465))
 
