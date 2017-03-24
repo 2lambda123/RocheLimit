@@ -111,8 +111,9 @@ class Planet:
         theta = dr.angle()
 
         # Implementing Sigurdson's suggestion for constant force for particles inside others.
+        # I modified it somewhat to instead only take into account the mass it 'sees' from its current radius.
         if dist < other.size + self.size:
-            force = G * self.mass * other.mass / other.size ** 2
+            force = G * self.mass * other.mass * (dist / other.size)**3 / dist ** 2
             # Also reduces the velocity, for shits & gigs.
             self.velocity *= 0.9
 

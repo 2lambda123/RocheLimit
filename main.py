@@ -5,7 +5,7 @@ from geometry import Vector2D
 
 # =========== START OF SIMULATION CODE ============
 
-(width, height) = (700, 700)
+(width, height) = (1300, 700)
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_icon(pygame.image.load('sigurdson_kris.png'))
 pygame.display.set_caption('Gravity Test')
@@ -25,29 +25,36 @@ universe.colour = (0,0,0)
 
 # May transition to scientific notation in the future...
 
-# The apoapsis (apogee in Earth-Moon system) is the highest point in an orbit, input in kilometres from centre body's core.
-# IRL the Moon's apogee is 405400000 m.
-apoapsis = 405400000.
+# The apoapsis (apogee in Earth-Moon system) is the highest point in an orbit, 
+# input in kilometres from centre body's core. The Moon's apogee IRL is 405400000 m.
+apoapsis = 40540000.
 
 # The periapsis (perogee in Earth-Moon system) is the lowest point in an orbit, input in kilometres from centre body's core.
 # IRL the Moon's perigee is 362600000 m.
 periapsis = 362600000.
 
-# Because I have definitely input a smaller value for the apoapsis before
+# Because I have definitely input a smaller value for the apoapsis before.
 if apoapsis < periapsis:
-    temp = apoapsis
-    apoapsis = periapsis
-    periapsis = temp
-
+    apoapsis, periapsis = periapsis, apoapsis
 
 
 # Pixel-to-Metre conversion.
 
-# As we already defined the apoapsis, we'll use its height as our base 'kilometre unit',
-# by which we can convert to and from pixels to metres at will.
+# As we already defined the apoapsis, we'll use its height as our base 
+# 'kilometre unit' by which we can convert to and from pixels to metres at will.
 
-m = apoapsis/(float(width) / 2 - 25.)
-# This is what we multiply to every distance in pixels to convert it to metres.
+m = (apoapsis + periapsis)/(float(width) - 50.) # in m / pixel
+
+
+# I have the if statement there to check if the height of the window will be too
+# small for the orbit.
+
+print 2 * (apoapsis * periapsis)**0.5/m, ' pixels'
+print 2 * (apoapsis * periapsis)**0.5, ' metres'
+
+if 2 * (apoapsis * periapsis)**0.5/m > height - 50:
+    m = 2 * (apoapsis * periapsis)**0.5 / float(height - 50)
+    
 
 
 # Orbit Paramatizer
@@ -60,7 +67,8 @@ G = (6.674*10**-11)/m**3
 
 earth_radius = 6371000 / m # in metres, converted to pixels through m
 earth_mass = 5.972*10**24 # kg
-earth = Planet((width/2, height/2), earth_radius, earth_mass)
+earth = Planet((25 + apoapsis/m, height/2), earth_radius, earth_mass)
+print 'Location of Earth: ', (25 + apoapsis/m, height/2)
 earth.fixed = True
 earth.colour = (100, 100, 255) # baby blue
 universe.planets.append(earth)
@@ -68,10 +76,6 @@ universe.planets.append(earth)
 
 
 # Parametarize Moon's Orbit
-# Find semi-major axis.
-a = ( periapsis + apoapsis ) / 2
-print a
-
 # Find necessary initial velocity to produce orbit from defined apoapsis and periapsis.
 v = ((2 * m**3 * G * earth_mass) * ((1 / apoapsis) - (1 / ( periapsis + apoapsis ))))**0.5
 print v, ' m/s'
@@ -125,7 +129,7 @@ while running:
 
         # If the trail has more than one point (necessary to actually make a line), draw the trail.
         if len(p.trail) > 1:
-            pygame.draw.lines(screen, p.line_colour, False, p.trail)
+            pygame.draw.aalines(screen, p.line_colour, False, p.trail)
 
         # ~~~~~ End Planet Trail Drawing Code ~~~~~ #
 
