@@ -15,12 +15,14 @@ font = pygame.font.SysFont('Sans', 60)
 
 clock = pygame.time.Clock()
 
-universe = Environment((width, height))
+largestOrbit = 1.00 * 10**8
+
+universe = Environment((width, height), largestOrbit)
 universe.colour = (0,0,0)
 
-# Defines distance from the sides of the screen the orbit can be, in pixels.
-hmargin = 25
-vmargin = 25
+# # Defines distance from the sides of the screen the orbit can be, in pixels.
+# hmargin = 25
+# vmargin = 25
 
 
 # Input Coordinates for Moon's orbit
@@ -31,16 +33,16 @@ vmargin = 25
 
 # The apoapsis (apogee in Earth-Moon system) is the highest point in an orbit, 
 # input in metres from centre body's core. The Moon's apogee IRL is 4.054 * 10**8 m.
-apoapsis = 1.00 * 10**8
-
-# The periapsis (perigee in Earth-Moon system) is the lowest point in an orbit, 
-# input in metres from centre body's core. The Moon's perigee IRL is 3.626 * 10**8 m.
-periapsis = 1.00 * 10**7
+# apoapsis = 1.00 * 10**8
+#
+# # The periapsis (perigee in Earth-Moon system) is the lowest point in an orbit,
+# # input in metres from centre body's core. The Moon's perigee IRL is 3.626 * 10**8 m.
+# periapsis = 1.00 * 10**7
 
 # Because I have definitely input a smaller value for the apoapsis before.
-if apoapsis < periapsis:
-    apoapsis, periapsis = periapsis, apoapsis
-
+# if apoapsis < periapsis:
+#     apoapsis, periapsis = periapsis, apoapsis
+#
 
 # Pixel-to-Metre conversion.
 
@@ -48,49 +50,48 @@ if apoapsis < periapsis:
 # 'kilometre unit' by which we can convert to and from pixels to metres at will.
 
 
-m = (apoapsis + periapsis)/(float(width - 2 * hmargin)) # in m / pixel
+# m = (apoapsis + periapsis)/(float(width - 2 * hmargin)) # in m / pixel
 
 
 # I have the if statement there to check if the height of the window will be too
 # small for the orbit. The program then adjusts the horizontal margin to fit
 # properly 
 
-if 2 * (apoapsis * periapsis)**0.5/m > height - 2 * vmargin:
-    m = 2 * (apoapsis * periapsis)**0.5 / float(height - 2 * vmargin)
-    hmargin = abs((width - (apoapsis + periapsis)/ m )/2)
+# if 2 * (apoapsis * periapsis)**0.5/m > height - 2 * vmargin:
+#     m = 2 * (apoapsis * periapsis)**0.5 / float(height - 2 * vmargin)
+#     hmargin = abs((width - (apoapsis + periapsis)/ m )/2)
     
 
 # This G is in pixels
-G = (6.674*10**-11)/m**3
+G = (6.674*10**-11)/universe.mToP**3
 
 
-earth_radius = 6371000 / m # in metres, converted to pixels through m
+earth_radius = 6371000 / universe.mToP # in metres, converted to pixels through m
 earth_mass = 5.972*10**24 # kg
-earth = Planet((hmargin + (apoapsis / m), height/2), earth_radius, earth_mass)
+earth = Planet((width/2, height/2), earth_radius, earth_mass)
 earth.fixed = True
 earth.colour = (100, 100, 255) # baby blue
 universe.planets.append(earth)
 
-
-
-moon_radius = 1737500 / m # in km, converted to pixels
+moon_radius = 1737500 / universe.mToP # in km, converted to pixels
 moon_mass = 7.348*10**22 # kg
-moon = Planet((hmargin, height/2), moon_radius, moon_mass)
-
+moon = Planet((2*universe.hmargin, height/2), moon_radius, moon_mass)
+moon.colour = (100, 100, 100)
+universe.planets.append(moon)
 
 # Based on the periapsis and apoapsis from earlier, this will provide the Moon
 # with an initial velocity to make said orbit. We'll assume that the Moon's
 # starting location is at the apoapsis, on the left side of the screen.
 
-v = ((2 * m**3 * G * (earth_mass + moon_mass )) * \
-    ((1 / apoapsis) - (1 / (periapsis + apoapsis))))**0.5
+# v = ((2 * universe.mToP**3 * G * (earth_mass + moon_mass )) * \
+#     ((1 / apoapsis) - (1 / (periapsis + apoapsis))))**0.5
+#
+#moon.velocity = Vector2D(0, -0.007) #m/s
 
-moon.velocity = Vector2D(0, - v/m) #m/s
-moon.colour = (100, 100, 100)
-universe.planets.append(moon)
+moon.stableOrbit(earth,1.00*10**7,universe.mToP, G)
 
 # Time between simulation steps, increase to increase speed of moon
-dt = 50
+dt = 1
 
 # Keeps track of times the loop has run
 i = 0

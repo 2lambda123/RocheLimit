@@ -10,9 +10,12 @@ from geometry import Vector2D
 class Environment:
     """ Defines the boundary of a simulation and its properties """
 
-    def __init__(self, (width, height)):
+    def __init__(self, (width, height), largestOrbit):
         self.width = width
         self.height = height
+        self.hmargin = 25
+        self.vmargin = 25
+        self.mToP = 2*largestOrbit/(float(self.width - 2 * self.hmargin))
         self.colour = (255, 255, 255)
         self.planets = []
 
@@ -68,6 +71,13 @@ class Planet:
         self.trail = []
         self.maxTrailLength = 1200
 
+    def stableOrbit(self, primary, periapsis, mToP, G):
+        apoapsis = self.position.length()
+
+        v = ((2 * mToP ** 3 * G * (self.mass + primary.mass)) *
+             ((1 / apoapsis) - (1 / (periapsis + apoapsis)))) ** 0.5
+
+        self.velocity = Vector2D(0, - v / mToP)  # m/s
     
     # Used to find the points necessary to draw the planet trails. 
     def appendTrail(self, height):
