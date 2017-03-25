@@ -92,6 +92,9 @@ universe.planets.append(moon)
 # Time between simulation steps, increase to increase speed of moon
 dt = 50
 
+# Time scale
+TIME_SCALE = 0.0001
+
 # Keeps track of times the loop has run
 i = 0
 
@@ -156,6 +159,6 @@ while running:
 
     pygame.display.flip()
 
-    # pygame.time.delay(int(dt * 1000))
+    pygame.time.delay(int(TIME_SCALE * dt * 1000))
 
 pygame.quit()  # IDLE interpreter friendly
