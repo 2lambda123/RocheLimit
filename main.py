@@ -1,4 +1,4 @@
-import pygame
+import pygame, math, random
 from roche import Environment, Planet
 from geometry import Vector2D
 
@@ -31,11 +31,11 @@ vmargin = 25
 
 # The apoapsis (apogee in Earth-Moon system) is the highest point in an orbit, 
 # input in metres from centre body's core. The Moon's apogee IRL is 4.054 * 10**8 m.
-apoapsis = 1.00 * 10**8
+apoapsis = 5.00 * 10**7
 
 # The periapsis (perigee in Earth-Moon system) is the lowest point in an orbit, 
 # input in metres from centre body's core. The Moon's perigee IRL is 3.626 * 10**8 m.
-periapsis = 1.00 * 10**7
+periapsis = 5.00 * 10**7
 
 # Because I have definitely input a smaller value for the apoapsis before.
 if apoapsis < periapsis:
@@ -75,7 +75,16 @@ universe.planets.append(earth)
 
 moon_radius = 1737500 / m # in km, converted to pixels
 moon_mass = 7.348*10**22 # kg
-moon = Planet((hmargin, height/2), moon_radius, moon_mass)
+centerPos = Vector2D(hmargin, height/2)
+moon = Planet((centerPos.x, centerPos.y), 0.5 * moon_radius, 0.5 * moon_mass)
+bodies = []
+N = 5
+for i in range(N):
+    angle = random.uniform(0, 2 * math.pi)
+    radius = random.uniform(moon_radius, 2*moon_radius)
+    pos = centerPos + Vector2D.create_from_angle(angle, radius)
+    body = Planet((pos.x, pos.y), 0.1 * moon_radius, 0.5/N * moon_mass)
+    bodies.append(body)
 
 
 # Based on the periapsis and apoapsis from earlier, this will provide the Moon
@@ -86,8 +95,13 @@ v = ((2 * m**3 * G * (earth_mass + moon_mass )) * \
     ((1 / apoapsis) - (1 / (periapsis + apoapsis))))**0.5
 
 moon.velocity = Vector2D(0, - v/m) #m/s
+for body in bodies:
+    body.velocity = Vector2D(0, - v/m) #m/s
+
 moon.colour = (100, 100, 100)
 universe.planets.append(moon)
+for body in bodies:
+    universe.planets.append(body)
 
 # Time between simulation steps, increase to increase speed of moon
 dt = 50
@@ -117,26 +131,25 @@ while running:
     universe.update(G, dt)
     screen.fill(universe.colour)
 
+    # ~~~~~ Planet Trail Drawing Code ~~~~~ #
+
+    # Placed prior to the planet drawing code to draw the trail underneath the planet.
+
+    # Appends the trail list with the particle's current position.
+    # For whatever reason, if these two ifs are compiled into one, everything breaks.
+    # Hence the double if. 
+    if i == timeStep:
+        moon.appendTrail(height)
+    if i > timeStep:
+        i = 0
+
+    # If the trail has more than one point (necessary to actually make a line), draw the trail.
+    if len(moon.trail) > 1:
+        pygame.draw.aalines(screen, moon.line_colour, False, moon.trail)
+
+    # ~~~~~ End Planet Trail Drawing Code ~~~~~ #
 
     for p in universe.planets:
-
-        # ~~~~~ Planet Trail Drawing Code ~~~~~ #
-
-        # Placed prior to the planet drawing code to draw the trail underneath the planet.
-
-        # Appends the trail list with the particle's current position.
-        # For whatever reason, if these two ifs are compiled into one, everything breaks.
-        # Hence the double if. 
-        if i == timeStep:
-            p.appendTrail(height)
-        if i > timeStep:
-            i = 0
-
-        # If the trail has more than one point (necessary to actually make a line), draw the trail.
-        if len(p.trail) > 1:
-            pygame.draw.aalines(screen, p.line_colour, False, p.trail)
-
-        # ~~~~~ End Planet Trail Drawing Code ~~~~~ #
 
         # I may have got text working
         if moon.areWeDead(earth) == True:
