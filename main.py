@@ -15,8 +15,7 @@ font = pygame.font.SysFont('Sans', 60)
 
 clock = pygame.time.Clock()
 
-universe = Environment((width, height))
-universe.colour = (0,0,0)
+
 
 # Defines distance from the sides of the screen the orbit can be, in pixels.
 hmargin = 25
@@ -63,27 +62,30 @@ if 2 * (apoapsis * periapsis)**0.5/m > height - 2 * vmargin:
 # This G is in pixels
 G = (6.674*10**-11)/m**3
 
+moon_radius = 1737500 / m # in km, converted to pixels
+universe = Environment((width, height), moon_radius)
+universe.colour = (0,0,0)
 
 earth_radius = 6371000 / m # in metres, converted to pixels through m
 earth_mass = 5.972*10**24 # kg
 earth = Planet((hmargin + (apoapsis / m), height/2), earth_radius, earth_mass)
 earth.fixed = True
 earth.colour = (100, 100, 255) # baby blue
-universe.planets.append(earth)
+universe.origin = earth
 
 
 
-moon_radius = 1737500 / m # in km, converted to pixels
+
 moon_mass = 7.348*10**22 # kg
 centerPos = Vector2D(hmargin, height/2)
-moon = Planet((centerPos.x, centerPos.y), 0.5 * moon_radius, 0.5 * moon_mass)
+moon = Planet((centerPos.x, centerPos.y), 0.7 * moon_radius, 0.7 * moon_mass)
 bodies = []
-N = 5
+N = 20
 for i in range(N):
     angle = random.uniform(0, 2 * math.pi)
-    radius = random.uniform(moon_radius, 2*moon_radius)
+    radius = random.uniform(2*moon_radius, 3*moon_radius)
     pos = centerPos + Vector2D.create_from_angle(angle, radius)
-    body = Planet((pos.x, pos.y), 0.1 * moon_radius, 0.5/N * moon_mass)
+    body = Planet((pos.x, pos.y), 0.1 * moon_radius, 0.3/N * moon_mass)
     bodies.append(body)
 
 
@@ -93,6 +95,8 @@ for i in range(N):
 
 v = ((2 * m**3 * G * (earth_mass + moon_mass )) * \
     ((1 / apoapsis) - (1 / (periapsis + apoapsis))))**0.5
+
+v = 0.9*v
 
 moon.velocity = Vector2D(0, - v/m) #m/s
 for body in bodies:
@@ -148,6 +152,13 @@ while running:
         pygame.draw.aalines(screen, moon.line_colour, False, moon.trail)
 
     # ~~~~~ End Planet Trail Drawing Code ~~~~~ #
+
+    # Draw origin body
+    pygame.draw.aalines(screen, universe.origin.colour, True, universe.origin.findOutline(height, 1), 1)
+    pygame.draw.aalines(screen, universe.origin.colour, True, universe.origin.findOutline(height, 0), 1)
+
+    pygame.draw.circle(screen, universe.origin.colour, (int(universe.origin.position.x), height - int(universe.origin.position.y)), int(universe.origin.size), 0)
+
 
     for p in universe.planets:
 

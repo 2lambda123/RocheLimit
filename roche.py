@@ -10,11 +10,13 @@ from geometry import Vector2D
 class Environment:
     """ Defines the boundary of a simulation and its properties """
 
-    def __init__(self, (width, height)):
+    def __init__(self, (width, height), collision_radius):
         self.width = width
         self.height = height
         self.colour = (255, 255, 255)
+        self.origin = None
         self.planets = []
+        self.collision_radius = collision_radius
 
     def addPlanets(self, n=1, **kargs):
         """ Add n planets with properties given by keyword arguments """
@@ -41,15 +43,31 @@ class Environment:
     def update(self, G, dt=0.01):
         """  Calls particle functions """
 
-        for i, planet in enumerate(self.planets):
-            # One planet functions get called here
-            # planet.move()
+        if self.origin:
+            for body in self.planets:
+                body.verlet(self.origin, G, dt)
 
-            # # Two planet functions get called here
-            for planet2 in self.planets[i + 1:]:
-            #     planet.attract(planet2)
-                planet.verlet(planet2, G, dt)
-                planet2.verlet(planet, G, dt)
+        # Center of mass calculation
+        R = Vector2D.zero()
+        M = 0
+        for body in self.planets:
+            M = M + body.mass
+            R = R + body.mass * body.position
+        R = R/M
+
+        for body in self.planets:
+            Rnew = R - body.mass * body.position/M
+            body.verletCOM(M, R, G,self.collision_radius, dt)
+        
+##        for i, planet in enumerate(self.planets):
+##            # One planet functions get called here
+##            # planet.move()
+##
+##            # # Two planet functions get called here
+##            for planet2 in self.planets[i + 1:]:
+##            #     planet.attract(planet2)
+##                planet.verlet(planet2, G, dt)
+##                planet2.verlet(planet, G, dt)
 
 
 class Planet:
@@ -90,11 +108,18 @@ class Planet:
         return edge
 
 
-    def verlet(self, other, G, dt=0.01):
+    def verlet(self, other, G, dt):
         if not self.fixed:
             self.velocity += 0.5 * dt * self.acceleration
             self.position += dt * self.velocity
             self.acceleration = self.getGravityAcceleration(other, G)
+            self.velocity += 0.5 * dt * self.acceleration
+
+    def verletCOM(self, M, R, G, collision_radius, dt):
+        if not self.fixed:
+            self.velocity += 0.5 * dt * self.acceleration
+            self.position += dt * self.velocity
+            self.acceleration = self.getGravityAccelerationCOM(G, M, R, collision_radius)
             self.velocity += 0.5 * dt * self.acceleration
 
     def areWeDead(self, other):
@@ -103,6 +128,25 @@ class Planet:
 
         if dist < other.size + self.size:
             return True
+
+    def getGravityAccelerationCOM(self, G, M, R, collision_radius):
+        dr = R - self.position
+        dist = dr.length()
+
+        theta = dr.angle()
+        
+        if dist < collision_radius:
+            force = 0
+            # Also reduces the velocity, for shits & gigs.
+            # self.velocity *= 0.9
+
+            # Obviously replace this in the future when we have multiple particles working, 
+            # I just did it because I was tired of planets shooting off to infinity.
+        else:
+            force = G * (M - self.mass) * self.mass / dist ** 2
+
+        return  Vector2D.create_from_angle(theta, force / self.mass)  # this feels wrong
+        
 
     def getGravityAcceleration(self, other, G):  # this isn't where this function should go
         dr = self.position - other.position
