@@ -84,7 +84,7 @@ moon = Body((centerPos.x, centerPos.y), MOON_FRACTION * moon_radius, MOON_FRACTI
 
 # create N bodies around the Moon
 bodies = []
-N = 20
+N = 100
 for i in range(N):
     angle = random.uniform(0, 2 * math.pi)
     radius = random.uniform(moon_radius, 2*moon_radius)
