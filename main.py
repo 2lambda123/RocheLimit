@@ -30,11 +30,11 @@ vmargin = 25
 
 # The apoapsis (apogee in Earth-Moon system) is the highest point in an orbit, 
 # input in metres from centre body's core. The Moon's apogee IRL is 4.054 * 10**8 m.
-apoapsis = 5.00 * 10**7
+apoapsis = 5.00e7
 
 # The periapsis (perigee in Earth-Moon system) is the lowest point in an orbit, 
 # input in metres from centre body's core. The Moon's perigee IRL is 3.626 * 10**8 m.
-periapsis = 5.00 * 10**7
+periapsis = 5.00e7
 
 # Because I have definitely input a smaller value for the apoapsis before.
 if apoapsis < periapsis:
@@ -62,14 +62,14 @@ if 2 * (apoapsis * periapsis)**0.5/m > height - 2 * vmargin:
     
 
 # This G is in pixels
-G = (6.674*10**-11)/m**3
+G = (6.674e-11)/m**3
 
 moon_radius = 1737500 / m # in km, converted to pixels
 universe = Environment((width, height), moon_radius)
 universe.colour = (0,0,0)
 
 earth_radius = 6371000 / m # in metres, converted to pixels through m
-earth_mass = 5.972*10**24 # kg
+earth_mass = 5.972e24 # kg
 earth = Body((hmargin + (apoapsis / m), height / 2), earth_radius, earth_mass)
 earth.fixed = True
 earth.colour = (100, 100, 255) # baby blue
@@ -78,7 +78,7 @@ universe.origin = earth
 # percentage mass that the moon has
 MOON_FRACTION = 0.9
 
-moon_mass = 7.348*10**22 # kg
+moon_mass = 7.348e22 # kg
 centerPos = Vector2D(hmargin, height/2)
 moon = Body((centerPos.x, centerPos.y), MOON_FRACTION * moon_radius, MOON_FRACTION * moon_mass)
 
@@ -121,7 +121,7 @@ TIME_SCALE = 0.0001
 i = 0
 
 # Time between drawing the trail step in frames. Large values lead to geodesic-esque patterns!
-timeStep = 10
+line_period = 5
 
 
 running = True
@@ -146,9 +146,9 @@ while running:
     # Appends the trail list with the particle's current position.
     # For whatever reason, if these two ifs are compiled into one, everything breaks.
     # Hence the double if. 
-    if i == timeStep:
+    if i == line_period:
         moon.appendTrail(height)
-    if i > timeStep:
+    if i > line_period:
         i = 0
 
     # If the trail has more than one point (necessary to actually make a line), draw the trail.
