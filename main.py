@@ -1,5 +1,5 @@
 import pygame, math, random
-from roche import Environment, Planet
+from roche import Environment, Body
 from geometry import Vector2D
 
 
@@ -8,10 +8,10 @@ from geometry import Vector2D
 (width, height) = (1300, 700)
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_icon(pygame.image.load('sigurdson_kris.png'))
-pygame.display.set_caption('Gravity Test')
+pygame.display.set_caption('Roche Limit')
 
 pygame.font.init()
-font = pygame.font.SysFont('Sans', 60)
+# font = pygame.font.SysFont('Sans', 60)
 
 clock = pygame.time.Clock()
 
@@ -40,6 +40,8 @@ periapsis = 5.00 * 10**7
 if apoapsis < periapsis:
     apoapsis, periapsis = periapsis, apoapsis
 
+# To get the COM orbiting, we have to reduce the calculated speed.
+SPEED_REDUCER = 0.7
 
 # Pixel-to-Metre conversion.
 
@@ -68,24 +70,26 @@ universe.colour = (0,0,0)
 
 earth_radius = 6371000 / m # in metres, converted to pixels through m
 earth_mass = 5.972*10**24 # kg
-earth = Planet((hmargin + (apoapsis / m), height/2), earth_radius, earth_mass)
+earth = Body((hmargin + (apoapsis / m), height / 2), earth_radius, earth_mass)
 earth.fixed = True
 earth.colour = (100, 100, 255) # baby blue
 universe.origin = earth
 
-
-
+# percentage mass that the moon has
+MOON_FRACTION = 0.9
 
 moon_mass = 7.348*10**22 # kg
 centerPos = Vector2D(hmargin, height/2)
-moon = Planet((centerPos.x, centerPos.y), 0.7 * moon_radius, 0.7 * moon_mass)
+moon = Body((centerPos.x, centerPos.y), MOON_FRACTION * moon_radius, MOON_FRACTION * moon_mass)
+
+# create N bodies around the Moon
 bodies = []
 N = 20
 for i in range(N):
     angle = random.uniform(0, 2 * math.pi)
-    radius = random.uniform(2*moon_radius, 3*moon_radius)
+    radius = random.uniform(moon_radius, 2*moon_radius)
     pos = centerPos + Vector2D.create_from_angle(angle, radius)
-    body = Planet((pos.x, pos.y), 0.1 * moon_radius, 0.3/N * moon_mass)
+    body = Body((pos.x, pos.y), 0.1 * moon_radius, (1 - MOON_FRACTION) / N * moon_mass)
     bodies.append(body)
 
 
@@ -93,24 +97,24 @@ for i in range(N):
 # with an initial velocity to make said orbit. We'll assume that the Moon's
 # starting location is at the apoapsis, on the left side of the screen.
 
-v = ((2 * m**3 * G * (earth_mass + moon_mass )) * \
+v = ((2 * m**3 * G * (earth_mass + moon_mass)) *
     ((1 / apoapsis) - (1 / (periapsis + apoapsis))))**0.5
 
-v = 0.9*v
+v = SPEED_REDUCER*v
 
 moon.velocity = Vector2D(0, - v/m) #m/s
 for body in bodies:
     body.velocity = Vector2D(0, - v/m) #m/s
 
 moon.colour = (100, 100, 100)
-universe.planets.append(moon)
+universe.bodies.append(moon)
 for body in bodies:
-    universe.planets.append(body)
+    universe.bodies.append(body)
 
-# Time between simulation steps, increase to increase speed of moon
-dt = 50
+# Time between simulation steps, increase to increase speed of moon. In ms.
+dt = 100
 
-# Time scale
+# Time scale factor
 TIME_SCALE = 0.0001
 
 # Keeps track of times the loop has run
@@ -160,12 +164,13 @@ while running:
     pygame.draw.circle(screen, universe.origin.colour, (int(universe.origin.position.x), height - int(universe.origin.position.y)), int(universe.origin.size), 0)
 
 
-    for p in universe.planets:
+    for p in universe.bodies:
 
         # I may have got text working
         if moon.areWeDead(earth) == True:
-            screen.blit(font.render('YOU KILLED', True, (255,0,0), (255,255,255)), (100, 400))
-            screen.blit(font.render('EVERYONE', True, (255,0,0), (255,255,255)), (110, 465))
+            # screen.blit(font.render('YOU KILLED', True, (255,0,0), (255,255,255)), (100, 400))
+            # screen.blit(font.render('EVERYONE', True, (255,0,0), (255,255,255)), (110, 465))
+            print "YOU KILLED EVERYONE!"
 
 
         # Draws it so that (0,0) is the bottom left corner

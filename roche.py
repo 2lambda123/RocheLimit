@@ -15,62 +15,55 @@ class Environment:
         self.height = height
         self.colour = (255, 255, 255)
         self.origin = None
-        self.planets = []
+        self.bodies = []
         self.collision_radius = collision_radius
 
-    def addPlanets(self, n=1, **kargs):
+    def addBodies(self, n=1, **kargs):
         """ Add n planets with properties given by keyword arguments """
 
         for i in range(n):
             size = kargs.get('size', random.randint(10, 20))
             if 'density' in kargs:
                 density = kargs.get('density', 1)
-                mass = density * (size ** 2)
+                mass = 4/3 * math.pi * density * (size ** 3)
             else:
                 mass = kargs.get('mass', random.randint(100, 10000))
 
             x = kargs.get('x', random.uniform(size, self.width - size))
             y = kargs.get('y', random.uniform(size, self.height - size))
 
-            planet = Planet((x, y), size, mass)
+            planet = Body((x, y), size, mass)
             speed = kargs.get('speed', random.random())
             angle = kargs.get('angle', random.uniform(0, math.pi * 2))
             planet.velocity = Vector2D.create_from_angle(angle, speed)
             planet.colour = kargs.get('colour', (0, 0, 255))
 
-            self.planets.append(planet)
+            self.bodies.append(planet)
 
     def update(self, G, dt=0.01):
         """  Calls particle functions """
 
         if self.origin:
-            for body in self.planets:
+            for body in self.bodies:
                 body.verlet(self.origin, G, dt)
 
         # Center of mass calculation
         R = Vector2D.zero()
         M = 0
-        for body in self.planets:
+        for body in self.bodies:
             M = M + body.mass
             R = R + body.mass * body.position
         R = R/M
 
-        for body in self.planets:
+        for body in self.bodies:
+            # calculate COM for all other particles
             Rnew = R - body.mass * body.position/M
-            body.verletCOM(M, R, G,self.collision_radius, dt)
-        
-##        for i, planet in enumerate(self.planets):
-##            # One planet functions get called here
-##            # planet.move()
-##
-##            # # Two planet functions get called here
-##            for planet2 in self.planets[i + 1:]:
-##            #     planet.attract(planet2)
-##                planet.verlet(planet2, G, dt)
-##                planet2.verlet(planet, G, dt)
+
+            body.verletCOM(M, Rnew, G, self.collision_radius, dt)
 
 
-class Planet:
+
+class Body:
     """ A circular planet with a velocity, size and density """
 
     def __init__(self, (x, y), size, mass):
@@ -115,6 +108,7 @@ class Planet:
             self.acceleration = self.getGravityAcceleration(other, G)
             self.velocity += 0.5 * dt * self.acceleration
 
+    # Verlet calculation using COM
     def verletCOM(self, M, R, G, collision_radius, dt):
         if not self.fixed:
             self.velocity += 0.5 * dt * self.acceleration
@@ -136,12 +130,8 @@ class Planet:
         theta = dr.angle()
         
         if dist < collision_radius:
+            # could be changed to linear function
             force = 0
-            # Also reduces the velocity, for shits & gigs.
-            # self.velocity *= 0.9
-
-            # Obviously replace this in the future when we have multiple particles working, 
-            # I just did it because I was tired of planets shooting off to infinity.
         else:
             force = G * (M - self.mass) * self.mass / dist ** 2
 
