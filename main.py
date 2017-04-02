@@ -76,7 +76,7 @@ earth.colour = (100, 100, 255) # baby blue
 universe.origin = earth
 
 # percentage mass that the moon has
-MOON_FRACTION = 0.9
+MOON_FRACTION = 0.01
 
 moon_mass = 7.348e22 # kg
 centerPos = Vector2D(hmargin, height/2)
@@ -146,14 +146,22 @@ while running:
     # Appends the trail list with the particle's current position.
     # For whatever reason, if these two ifs are compiled into one, everything breaks.
     # Hence the double if. 
-    if i == line_period:
-        moon.appendTrail(height)
-    if i > line_period:
-        i = 0
+    # if i == line_period:
+    #     moon.appendTrail(height)
+    # if i > line_period:
+    #     i = 0
 
     # If the trail has more than one point (necessary to actually make a line), draw the trail.
-    if len(moon.trail) > 1:
-        pygame.draw.aalines(screen, moon.line_colour, False, moon.trail)
+    # if len(moon.trail) > 1:
+    #     pygame.draw.aalines(screen, moon.line_colour, False, moon.trail)
+
+    if i == line_period:
+        universe.appendCOMTrail()
+        i = 0
+
+    if len(universe.trail) > 1:
+        pygame.draw.aalines(screen, moon.line_colour, False, universe.trail)
+
 
     # ~~~~~ End Planet Trail Drawing Code ~~~~~ #
 

@@ -19,6 +19,8 @@ class Environment:
         self.collision_radius = collision_radius
         self.COM = Vector2D.zero()
         self.M = 0
+        self.trail = []
+        self.maxTrailLength = 1000
 
     def addBodies(self, n=1, **kargs):
         """ Add n planets with properties given by keyword arguments """
@@ -65,6 +67,16 @@ class Environment:
             self.M = self.M + body.mass
             self.COM = self.COM + body.mass * body.position
         self.COM = self.COM/self.M
+
+    def appendCOMTrail(self):
+        # Appends the particle's current position onto the trail list when called.
+        self.trail.append([self.COM.x, self.height - self.COM.y])
+
+        # If the trail has exceeded a certain length, the oldest values are deleted.
+        if len(self.trail) > self.maxTrailLength:
+            self.trail.pop(0)
+
+
 
 class Body:
     """ A circular planet with a velocity, size and density """
