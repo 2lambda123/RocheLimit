@@ -17,6 +17,8 @@ class Environment:
         self.origin = None
         self.bodies = []
         self.collision_radius = collision_radius
+        self.COM = Vector2D.zero()
+        self.M = 0
 
     def addBodies(self, n=1, **kargs):
         """ Add n planets with properties given by keyword arguments """
@@ -47,21 +49,22 @@ class Environment:
             for body in self.bodies:
                 body.verlet(self.origin, G, dt)
 
-        # Center of mass calculation
-        R = Vector2D.zero()
-        M = 0
-        for body in self.bodies:
-            M = M + body.mass
-            R = R + body.mass * body.position
-        R = R/M
+        self.calculateCOM()
 
         for body in self.bodies:
             # calculate COM for all other particles
-            Rnew = R - body.mass * body.position/M
+            Rnew = self.COM - body.mass * body.position/self.M
 
-            body.verletCOM(M, Rnew, G, self.collision_radius, dt)
+            body.verletCOM(self.M, Rnew, G, self.collision_radius, dt)
 
-
+    def calculateCOM(self):
+        # Center of mass calculation
+        self.COM = Vector2D.zero()
+        self.M = 0
+        for body in self.bodies:
+            self.M = self.M + body.mass
+            self.COM = self.COM + body.mass * body.position
+        self.COM = self.COM/self.M
 
 class Body:
     """ A circular planet with a velocity, size and density """
