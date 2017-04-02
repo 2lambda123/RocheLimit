@@ -18,8 +18,8 @@ clock = pygame.time.Clock()
 
 
 # Defines distance from the sides of the screen the orbit can be, in pixels.
-hmargin = 25
-vmargin = 25
+hmargin = 150
+vmargin = 150
 
 
 # Input Coordinates for Moon's orbit
@@ -41,7 +41,7 @@ if apoapsis < periapsis:
     apoapsis, periapsis = periapsis, apoapsis
 
 # To get the COM orbiting, we have to reduce the calculated speed.
-SPEED_REDUCER = 0.7
+SPEED_REDUCER = 0
 
 # Pixel-to-Metre conversion.
 
@@ -69,14 +69,16 @@ universe = Environment((width, height), moon_radius)
 universe.colour = (0,0,0)
 
 earth_radius = 6371000 / m # in metres, converted to pixels through m
-earth_mass = 5.972e24 # kg
+earth_mass = 5.972e-24 # kg
 earth = Body((hmargin + (apoapsis / m), height / 2), earth_radius, earth_mass)
 earth.fixed = True
 earth.colour = (100, 100, 255) # baby blue
 universe.origin = earth
 
 # percentage mass that the moon has
-MOON_FRACTION = 0.9
+MOON_FRACTION = 0.5
+
+
 
 moon_mass = 7.348e22 # kg
 centerPos = Vector2D(hmargin, height/2)
@@ -84,7 +86,7 @@ moon = Body((centerPos.x, centerPos.y), MOON_FRACTION * moon_radius, MOON_FRACTI
 
 # create N bodies around the Moon
 bodies = []
-N = 100
+N = 1
 for i in range(N):
     angle = random.uniform(0, 2 * math.pi)
     radius = random.uniform(moon_radius, 2*moon_radius)
@@ -146,21 +148,21 @@ while running:
     # Appends the trail list with the particle's current position.
     # For whatever reason, if these two ifs are compiled into one, everything breaks.
     # Hence the double if. 
-    # if i == line_period:
-    #     moon.appendTrail(height)
-    # if i > line_period:
-    #     i = 0
+    if i == line_period:
+        moon.appendTrail(height)
+    if i > line_period:
+        i = 0
 
     # If the trail has more than one point (necessary to actually make a line), draw the trail.
-    # if len(moon.trail) > 1:
-    #     pygame.draw.aalines(screen, moon.line_colour, False, moon.trail)
+    if len(moon.trail) > 1:
+        pygame.draw.aalines(screen, moon.line_colour, False, moon.trail)
 
     if i == line_period:
         universe.appendCOMTrail()
         i = 0
 
     if len(universe.trail) > 1:
-        pygame.draw.aalines(screen, moon.line_colour, False, universe.trail)
+        pygame.draw.aalines(screen, (120, 255, 120), False, universe.trail)
 
 
     # ~~~~~ End Planet Trail Drawing Code ~~~~~ #
@@ -193,7 +195,7 @@ while running:
 
             pygame.draw.circle(screen, p.colour, (int(p.position.x), height - int(p.position.y)), int(p.size), 0)
 
-        pygame.draw.rect(screen, p.line_colour, (universe.COM.x, height - universe.COM.y, 5, 5), 0)
+        pygame.draw.rect(screen, (120, 255, 120), (universe.COM.x, height - universe.COM.y, 5, 5), 0)
 
     pygame.display.flip()
 

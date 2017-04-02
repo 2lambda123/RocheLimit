@@ -50,12 +50,15 @@ class Environment:
         if self.origin:
             for body in self.bodies:
                 body.verlet(self.origin, G, dt)
-
+                self.origin.verlet(body, G, dt)
         self.calculateCOM()
+
+        if len(self.bodies) <= 1:
+            return
 
         for body in self.bodies:
             # calculate COM for all other particles
-            Rnew = self.COM - body.mass * body.position/self.M
+            Rnew = (self.COM - body.mass*body.position/self.M)*self.M/(self.M - body.mass)
 
             body.verletCOM(self.M, Rnew, G, self.collision_radius, dt)
 
@@ -85,7 +88,7 @@ class Body:
         self.position = Vector2D(x, y)
         self.size = size
         self.colour = (255, 255, 255)
-        self.line_colour = (120, 255, 120)
+        self.line_colour = (255, 0, 0)
         self.thickness = 0
         self.mass = mass
         self.velocity = Vector2D.zero()
@@ -140,18 +143,23 @@ class Body:
 
     def getGravityAccelerationCOM(self, G, M, R, collision_radius):
         dr = R - self.position
+        print 'Value of R: ', R
+        print 'Position: ', self.position
+        print 'Value of dr: ', dr
         dist = dr.length()
 
         theta = dr.angle()
+        print theta*180/math.pi
         
         if dist < collision_radius:
             # could be changed to linear function
-            force = G * (M - self.mass) * self.mass / collision_radius ** 2 * dist/collision_radius
+            # force = G * (M - self.mass) * self.mass / collision_radius ** 2 * dist/collision_radius
+            force = 0
         else:
             force = G * (M - self.mass) * self.mass / dist ** 2
 
-        return  Vector2D.create_from_angle(theta, force / self.mass)  # this feels wrong
-        
+        # return  Vector2D.create_from_angle(theta, force / self.mass)  # this feels wrong
+        return (dr/dist)*force/self.mass
 
     def getGravityAcceleration(self, other, G):  # this isn't where this function should go
         dr = self.position - other.position
