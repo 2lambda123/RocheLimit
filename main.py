@@ -76,7 +76,7 @@ earth.colour = (100, 100, 255) # baby blue
 universe.origin = earth
 
 # percentage mass that the moon has
-MOON_FRACTION = 0.01
+MOON_FRACTION = 0.9
 
 moon_mass = 7.348e22 # kg
 centerPos = Vector2D(hmargin, height/2)
@@ -193,6 +193,7 @@ while running:
 
             pygame.draw.circle(screen, p.colour, (int(p.position.x), height - int(p.position.y)), int(p.size), 0)
 
+        pygame.draw.rect(screen, p.line_colour, (universe.COM.x, height - universe.COM.y, 5, 5), 0)
 
     pygame.display.flip()
 
