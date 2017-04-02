@@ -18,8 +18,8 @@ clock = pygame.time.Clock()
 
 
 # Defines distance from the sides of the screen the orbit can be, in pixels.
-hmargin = 150
-vmargin = 150
+hmargin = 25
+vmargin = 25
 
 
 # Input Coordinates for Moon's orbit
@@ -30,18 +30,18 @@ vmargin = 150
 
 # The apoapsis (apogee in Earth-Moon system) is the highest point in an orbit, 
 # input in metres from centre body's core. The Moon's apogee IRL is 4.054 * 10**8 m.
-apoapsis = 5.00e7
+apoapsis = 5.00e8
 
 # The periapsis (perigee in Earth-Moon system) is the lowest point in an orbit, 
 # input in metres from centre body's core. The Moon's perigee IRL is 3.626 * 10**8 m.
-periapsis = 5.00e7
+periapsis = 5.00e8
 
 # Because I have definitely input a smaller value for the apoapsis before.
 if apoapsis < periapsis:
     apoapsis, periapsis = periapsis, apoapsis
 
 # To get the COM orbiting, we have to reduce the calculated speed.
-SPEED_REDUCER = 0
+SPEED_REDUCER = 0.7
 
 # Pixel-to-Metre conversion.
 
@@ -69,7 +69,7 @@ universe = Environment((width, height), moon_radius)
 universe.colour = (0,0,0)
 
 earth_radius = 6371000 / m # in metres, converted to pixels through m
-earth_mass = 5.972e-24 # kg
+earth_mass = 5.972e24 # kg
 earth = Body((hmargin + (apoapsis / m), height / 2), earth_radius, earth_mass)
 earth.fixed = True
 earth.colour = (100, 100, 255) # baby blue

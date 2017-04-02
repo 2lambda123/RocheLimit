@@ -153,8 +153,7 @@ class Body:
         
         if dist < collision_radius:
             # could be changed to linear function
-            # force = G * (M - self.mass) * self.mass / collision_radius ** 2 * dist/collision_radius
-            force = 0
+            force = G * (M - self.mass) * self.mass / collision_radius ** 2 * dist/collision_radius
         else:
             force = G * (M - self.mass) * self.mass / dist ** 2
 
