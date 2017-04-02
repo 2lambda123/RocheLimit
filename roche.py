@@ -47,20 +47,16 @@ class Environment:
     def update(self, G, dt=0.01):
         """  Calls particle functions """
 
-        if self.origin:
-            for body in self.bodies:
-                body.verlet(self.origin, G, dt)
-                self.origin.verlet(body, G, dt)
         self.calculateCOM()
-
-        if len(self.bodies) <= 1:
-            return
 
         for body in self.bodies:
             # calculate COM for all other particles
-            Rnew = (self.COM - body.mass*body.position/self.M)*self.M/(self.M - body.mass)
+            if len(self.bodies) > 1:
+                Rnew = (self.COM - body.mass*body.position/self.M)*self.M/(self.M - body.mass)
+            else:
+                Rnew = Vector2D.zero()  # arbitrary since the force is zero when len(bodies) == 1
+            body.verletCOM(self.M, Rnew, G, self.collision_radius, self.origin, dt)
 
-            body.verletCOM(self.M, Rnew, G, self.collision_radius, dt)
 
     def calculateCOM(self):
         # Center of mass calculation
@@ -127,11 +123,11 @@ class Body:
             self.velocity += 0.5 * dt * self.acceleration
 
     # Verlet calculation using COM
-    def verletCOM(self, M, R, G, collision_radius, dt):
+    def verletCOM(self, M, R, G, collision_radius, origin, dt):
         if not self.fixed:
             self.velocity += 0.5 * dt * self.acceleration
             self.position += dt * self.velocity
-            self.acceleration = self.getGravityAccelerationCOM(G, M, R, collision_radius)
+            self.acceleration = self.getGravityAccelerationCOM(G, M, R, collision_radius) + self.getGravityAcceleration(origin, G)
             self.velocity += 0.5 * dt * self.acceleration
 
     def areWeDead(self, other):
@@ -143,13 +139,9 @@ class Body:
 
     def getGravityAccelerationCOM(self, G, M, R, collision_radius):
         dr = R - self.position
-        print 'Value of R: ', R
-        print 'Position: ', self.position
-        print 'Value of dr: ', dr
         dist = dr.length()
 
         theta = dr.angle()
-        print theta*180/math.pi
         
         if dist < collision_radius:
             # could be changed to linear function
@@ -161,6 +153,9 @@ class Body:
         return (dr/dist)*force/self.mass
 
     def getGravityAcceleration(self, other, G):  # this isn't where this function should go
+        if other is None:
+            return Vector2D.zero()
+
         dr = self.position - other.position
         dist = dr.length()
 

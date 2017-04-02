@@ -30,18 +30,18 @@ vmargin = 25
 
 # The apoapsis (apogee in Earth-Moon system) is the highest point in an orbit, 
 # input in metres from centre body's core. The Moon's apogee IRL is 4.054 * 10**8 m.
-apoapsis = 5.00e8
+apoapsis = 5.00e7
 
 # The periapsis (perigee in Earth-Moon system) is the lowest point in an orbit, 
 # input in metres from centre body's core. The Moon's perigee IRL is 3.626 * 10**8 m.
-periapsis = 5.00e8
+periapsis = 5.00e7
 
 # Because I have definitely input a smaller value for the apoapsis before.
 if apoapsis < periapsis:
     apoapsis, periapsis = periapsis, apoapsis
 
 # To get the COM orbiting, we have to reduce the calculated speed.
-SPEED_REDUCER = 0.7
+SPEED_REDUCER = 1
 
 # Pixel-to-Metre conversion.
 
@@ -76,7 +76,7 @@ earth.colour = (100, 100, 255) # baby blue
 universe.origin = earth
 
 # percentage mass that the moon has
-MOON_FRACTION = 0.5
+MOON_FRACTION = 0.9
 
 
 
