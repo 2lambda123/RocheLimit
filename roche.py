@@ -81,12 +81,12 @@ class Environment:
         for body in self.bodies:
             body.velocity += 0.5 * dt * body.acceleration
             body.position += dt * body.velocity
+            body.acceleration = Vector2D.zero()
         for i, body in enumerate(self.bodies):
-            body.acceleration = body.getGravityAcceleration(self.origin, G)
+            body.acceleration += body.getGravityAcceleration(self.origin, G)
             for other in self.bodies[i+1:]:
-                g = body.getGravityAcceleration(other, G)
-                body.acceleration += g
-                other.acceleration = -g
+                body.acceleration += body.getGravityAcceleration(other, G)
+                other.acceleration += other.getGravityAcceleration(body, G)
         for body in self.bodies:
             body.velocity += 0.5 * dt * body.acceleration
 
@@ -94,6 +94,9 @@ class Environment:
 
 class Body:
     """ A circular planet with a velocity, size and density """
+
+    # If the body has a radius greater than this, the body is treated as a gas cloud
+    COLLISION_RADIUS = 5
 
     def __init__(self, (x, y), size, mass):
         self.position = Vector2D(x, y)
@@ -171,21 +174,19 @@ class Body:
         if other is None:
             return Vector2D.zero()
 
-        dr = self.position - other.position
+        dr = other.position - self.position
         dist = dr.length()
 
         theta = dr.angle()
 
-        # Implementing Sigurdson's suggestion for constant force for particles inside others.
-        # I modified it somewhat to instead only take into account the mass it 'sees' from its current radius.
         if dist < other.size + self.size:
-            force = 0
-            # Also reduces the velocity, for shits & gigs.
-            # self.velocity *= 0.9,
-
-            # Obviously replace this in the future when we have multiple particles working, 
-            # I just did it because I was tired of planets shooting off to infinity.
+            if other.size > self.COLLISION_RADIUS:
+                force = (G * self.mass * other.mass / other.size ** 2) * (dist/other.size)
+            elif self.size > self.COLLISION_RADIUS:
+                force = (G * self.mass * other.mass / self.size ** 2) * (dist/self.size)
+            else:
+                force = 0
         else:
             force = G * self.mass * other.mass / dist ** 2
 
-        return - Vector2D.create_from_angle(theta, force / self.mass)  # this feels wrong
+        return (dr/dist)*force/self.mass

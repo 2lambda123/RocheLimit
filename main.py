@@ -86,10 +86,10 @@ moon = Body((centerPos.x, centerPos.y), MOON_FRACTION * moon_radius, MOON_FRACTI
 
 # create N bodies around the Moon
 bodies = []
-N = 1
+N = 10
 for i in range(N):
     angle = random.uniform(0, 2 * math.pi)
-    radius = random.uniform(moon_radius, 2*moon_radius)
+    radius = random.uniform(moon_radius, 1.5*moon_radius)
     pos = centerPos + Vector2D.create_from_angle(angle, radius)
     body = Body((pos.x, pos.y), 0.1 * moon_radius, (1 - MOON_FRACTION) / N * moon_mass)
     bodies.append(body)
