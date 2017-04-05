@@ -34,7 +34,7 @@ apoapsis = 5.00e7
 
 # The periapsis (perigee in Earth-Moon system) is the lowest point in an orbit, 
 # input in metres from centre body's core. The Moon's perigee IRL is 3.626 * 10**8 m.
-periapsis = 5.00e7
+periapsis = apoapsis
 
 # Because I have definitely input a smaller value for the apoapsis before.
 if apoapsis < periapsis:

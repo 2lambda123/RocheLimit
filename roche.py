@@ -47,15 +47,17 @@ class Environment:
     def update(self, G, dt=0.01):
         """  Calls particle functions """
 
-        self.calculateCOM()
+        # self.calculateCOM()
+        #
+        # for body in self.bodies:
+        #     # calculate COM for all other particles
+        #     if len(self.bodies) > 1:
+        #         Rnew = (self.COM - body.mass*body.position/self.M)*self.M/(self.M - body.mass)
+        #     else:
+        #         Rnew = Vector2D.zero()  # arbitrary since the force is zero when len(bodies) == 1
+        #     body.verletCOM(self.M, Rnew, G, self.collision_radius, self.origin, dt)
 
-        for body in self.bodies:
-            # calculate COM for all other particles
-            if len(self.bodies) > 1:
-                Rnew = (self.COM - body.mass*body.position/self.M)*self.M/(self.M - body.mass)
-            else:
-                Rnew = Vector2D.zero()  # arbitrary since the force is zero when len(bodies) == 1
-            body.verletCOM(self.M, Rnew, G, self.collision_radius, self.origin, dt)
+        self.verlet(G, dt)
 
 
     def calculateCOM(self):
@@ -74,6 +76,19 @@ class Environment:
         # If the trail has exceeded a certain length, the oldest values are deleted.
         if len(self.trail) > self.maxTrailLength:
             self.trail.pop(0)
+
+    def verlet(self, G, dt):
+        for body in self.bodies:
+            body.velocity += 0.5 * dt * body.acceleration
+            body.position += dt * body.velocity
+        for i, body in enumerate(self.bodies):
+            body.acceleration = body.getGravityAcceleration(self.origin, G)
+            for other in self.bodies[i+1:]:
+                g = body.getGravityAcceleration(other, G)
+                body.acceleration += g
+                other.acceleration = -g
+        for body in self.bodies:
+            body.velocity += 0.5 * dt * body.acceleration
 
 
 
@@ -164,9 +179,9 @@ class Body:
         # Implementing Sigurdson's suggestion for constant force for particles inside others.
         # I modified it somewhat to instead only take into account the mass it 'sees' from its current radius.
         if dist < other.size + self.size:
-            force = G * self.mass * other.mass * (dist / other.size)**3 / dist ** 2
+            force = 0
             # Also reduces the velocity, for shits & gigs.
-            self.velocity *= 0.9
+            # self.velocity *= 0.9,
 
             # Obviously replace this in the future when we have multiple particles working, 
             # I just did it because I was tired of planets shooting off to infinity.
