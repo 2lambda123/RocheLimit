@@ -163,7 +163,7 @@ class Body:
         
         if dist < collision_radius:
             # could be changed to linear function
-            force = G * (M - self.mass) * self.mass / collision_radius ** 2 * dist/collision_radius
+            force = 0.01* G * (M - self.mass) * self.mass / collision_radius ** 2 * dist/collision_radius
         else:
             force = G * (M - self.mass) * self.mass / dist ** 2
 
@@ -179,13 +179,20 @@ class Body:
 
         theta = dr.angle()
 
-        if dist < other.size + self.size:
-            if other.size > self.COLLISION_RADIUS:
-                force = (G * self.mass * other.mass / other.size ** 2) * (dist/other.size)
-            elif self.size > self.COLLISION_RADIUS:
-                force = (G * self.mass * other.mass / self.size ** 2) * (dist/self.size)
-            else:
-                force = 0
+        if other.size > self.COLLISION_RADIUS:
+            Fmax = G * self.mass * other.mass / other.size ** 2
+        elif self.size > self.COLLISION_RADIUS:
+            Fmax = G * self.mass * other.mass / self.size ** 2
+        else:
+            Fmax = 0
+
+        rmin = other.size + self.size
+
+        # Implementing James' 'collision' code
+        if dist < rmin/3:
+            force = - 3 * Fmax * dist / rmin
+        elif dist > 2*rmin/3 and dist < rmin:
+            force = (3 * Fmax * dist / rmin) - 2 * Fmax
         else:
             force = G * self.mass * other.mass / dist ** 2
 

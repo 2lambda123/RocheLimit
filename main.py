@@ -82,16 +82,16 @@ MOON_FRACTION = 0.9
 
 moon_mass = 7.348e22 # kg
 centerPos = Vector2D(hmargin, height/2)
-moon = Body((centerPos.x, centerPos.y), MOON_FRACTION * moon_radius, MOON_FRACTION * moon_mass)
+# moon = Body((centerPos.x, centerPos.y), MOON_FRACTION * moon_radius, MOON_FRACTION * moon_mass)
 
 # create N bodies around the Moon
 bodies = []
-N = 10
+N = 20
 for i in range(N):
     angle = random.uniform(0, 2 * math.pi)
-    radius = random.uniform(moon_radius, 1.5*moon_radius)
+    radius = random.uniform(moon_radius, 0.5*moon_radius)
     pos = centerPos + Vector2D.create_from_angle(angle, radius)
-    body = Body((pos.x, pos.y), 0.1 * moon_radius, (1 - MOON_FRACTION) / N * moon_mass)
+    body = Body((pos.x, pos.y), moon_radius / 5, (1 - MOON_FRACTION) / N * moon_mass)
     bodies.append(body)
 
 
@@ -104,12 +104,12 @@ v = ((2 * m**3 * G * (earth_mass + moon_mass)) *
 
 v = SPEED_REDUCER*v
 
-moon.velocity = Vector2D(0, - v/m) #m/s
+# moon.velocity = Vector2D(0, - v/m) #m/s
 for body in bodies:
     body.velocity = Vector2D(0, - v/m) #m/s
 
-moon.colour = (100, 100, 100)
-universe.bodies.append(moon)
+# moon.colour = (100, 100, 100)
+# universe.bodies.append(moon)
 for body in bodies:
     universe.bodies.append(body)
 
@@ -148,14 +148,14 @@ while running:
     # Appends the trail list with the particle's current position.
     # For whatever reason, if these two ifs are compiled into one, everything breaks.
     # Hence the double if. 
-    if i == line_period:
-        moon.appendTrail(height)
-    if i > line_period:
-        i = 0
+    # if i == line_period:
+    #     moon.appendTrail(height)
+    # if i > line_period:
+    #     i = 0
 
     # If the trail has more than one point (necessary to actually make a line), draw the trail.
-    if len(moon.trail) > 1:
-        pygame.draw.aalines(screen, moon.line_colour, False, moon.trail)
+    # if len(moon.trail) > 1:
+    #     pygame.draw.aalines(screen, moon.line_colour, False, moon.trail)
 
     if i == line_period:
         universe.appendCOMTrail()
@@ -176,11 +176,11 @@ while running:
 
     for p in universe.bodies:
 
-        # I may have got text working
-        if moon.areWeDead(earth) == True:
-            # screen.blit(font.render('YOU KILLED', True, (255,0,0), (255,255,255)), (100, 400))
-            # screen.blit(font.render('EVERYONE', True, (255,0,0), (255,255,255)), (110, 465))
-            print "YOU KILLED EVERYONE!"
+        # # I may have got text working
+        # if moon.areWeDead(earth) == True:
+        #     # screen.blit(font.render('YOU KILLED', True, (255,0,0), (255,255,255)), (100, 400))
+        #     # screen.blit(font.render('EVERYONE', True, (255,0,0), (255,255,255)), (110, 465))
+        #     print "YOU KILLED EVERYONE!"
 
 
         # Draws it so that (0,0) is the bottom left corner
