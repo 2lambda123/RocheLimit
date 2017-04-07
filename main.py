@@ -34,7 +34,7 @@ apoapsis = 5.00e7
 
 # The periapsis (perigee in Earth-Moon system) is the lowest point in an orbit, 
 # input in metres from centre body's core. The Moon's perigee IRL is 3.626 * 10**8 m.
-periapsis = apoapsis
+periapsis = 1.00e7
 
 # Because I have definitely input a smaller value for the apoapsis before.
 if apoapsis < periapsis:
@@ -86,10 +86,10 @@ centerPos = Vector2D(hmargin, height/2)
 
 # create N bodies around the Moon
 bodies = []
-N = 20
+N = 40
 for i in range(N):
     angle = random.uniform(0, 2 * math.pi)
-    radius = random.uniform(moon_radius, 0.5*moon_radius)
+    radius = random.uniform(0.5 * moon_radius, 0.25*moon_radius)
     pos = centerPos + Vector2D.create_from_angle(angle, radius)
     body = Body((pos.x, pos.y), moon_radius / 5, (1 - MOON_FRACTION) / N * moon_mass)
     bodies.append(body)
