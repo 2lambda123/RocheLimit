@@ -76,7 +76,7 @@ earth.colour = (100, 100, 255) # baby blue
 universe.origin = earth
 
 # percentage mass that the moon has
-MOON_FRACTION = 0.9
+MOON_FRACTION = 0.0
 
 
 
@@ -86,7 +86,7 @@ centerPos = Vector2D(hmargin, height/2)
 
 # create N bodies around the Moon
 bodies = []
-N = 40
+N = 50
 for i in range(N):
     angle = random.uniform(0, 2 * math.pi)
     radius = random.uniform(0.5 * moon_radius, 0.25*moon_radius)

@@ -191,7 +191,7 @@ class Body:
         # Implementing James' 'collision' code
         if dist < rmin/3:
             force = - 3 * Fmax * dist / rmin
-        elif dist > 2*rmin/3 and dist < rmin:
+        elif dist > rmin/3 and dist < rmin:
             force = (3 * Fmax * dist / rmin) - 2 * Fmax
         else:
             force = G * self.mass * other.mass / dist ** 2
