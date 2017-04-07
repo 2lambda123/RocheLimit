@@ -69,7 +69,10 @@ class Environment:
             self.COM = self.COM + body.mass * body.position
         self.COM = self.COM/self.M
 
+
     def appendCOMTrail(self):
+
+        self.calculateCOM()
         # Appends the particle's current position onto the trail list when called.
         self.trail.append([self.COM.x, self.height - self.COM.y])
 

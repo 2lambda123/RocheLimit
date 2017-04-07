@@ -30,7 +30,7 @@ vmargin = 25
 
 # The apoapsis (apogee in Earth-Moon system) is the highest point in an orbit, 
 # input in metres from centre body's core. The Moon's apogee IRL is 4.054 * 10**8 m.
-apoapsis = 5.00e7
+apoapsis = 7.00e7
 
 # The periapsis (perigee in Earth-Moon system) is the lowest point in an orbit, 
 # input in metres from centre body's core. The Moon's perigee IRL is 3.626 * 10**8 m.
@@ -86,12 +86,12 @@ centerPos = Vector2D(hmargin, height/2)
 
 # create N bodies around the Moon
 bodies = []
-N = 50
+N = 20
 for i in range(N):
     angle = random.uniform(0, 2 * math.pi)
     radius = random.uniform(0.5 * moon_radius, 0.25*moon_radius)
     pos = centerPos + Vector2D.create_from_angle(angle, radius)
-    body = Body((pos.x, pos.y), moon_radius / 5, (1 - MOON_FRACTION) / N * moon_mass)
+    body = Body((pos.x, pos.y), 2* moon_radius / N, (1 - MOON_FRACTION) / N * moon_mass)
     bodies.append(body)
 
 
@@ -123,7 +123,7 @@ TIME_SCALE = 0.0001
 i = 0
 
 # Time between drawing the trail step in frames. Large values lead to geodesic-esque patterns!
-line_period = 5
+line_period = 1
 
 
 running = True
