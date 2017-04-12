@@ -1,5 +1,7 @@
 import math
 import random
+import numpy as np
+import matplotlib.pyplot as plt
 from geometry import Vector2D
 
 # Gravitational Constant
@@ -21,6 +23,15 @@ class Environment:
         self.M = 0
         self.trail = []
         self.maxTrailLength = 1000
+
+        self.plot, = plt.plot([], [])
+        plt.ion() # turn on interactive mode
+        self.axes = plt.gca()
+        self.axes.set_autoscale_on(True)
+        plt.title("Energy vs. Time")
+        plt.xlabel("Timestep")
+        plt.ylabel("Total Energy (J)")
+
 
     def addBodies(self, n=1, **kargs):
         """ Add n planets with properties given by keyword arguments """
@@ -48,16 +59,35 @@ class Environment:
         """  Calls particle functions """
 
         # self.calculateCOM()
-        #
-        # for body in self.bodies:
-        #     # calculate COM for all other particles
-        #     if len(self.bodies) > 1:
-        #         Rnew = (self.COM - body.mass*body.position/self.M)*self.M/(self.M - body.mass)
-        #     else:
-        #         Rnew = Vector2D.zero()  # arbitrary since the force is zero when len(bodies) == 1
-        #     body.verletCOM(self.M, Rnew, G, self.collision_radius, self.origin, dt)
 
         self.verlet(G, dt)
+
+        Ttotal = 0 # total Kinetic Energy of all bodies
+        Utotal = 0 # total Potential Energy of all bodies
+        for i, body in enumerate(self.bodies):
+            U = 0
+            for other in self.bodies:
+                U += body.getPotentialEnergyWRT(other, G)
+            Utotal += U
+            Ttotal += body.getKineticEnergy()
+
+        time = self.plot.get_xdata()
+        energy = self.plot.get_ydata()
+
+        if len(time) == 0:
+            time = np.append(time, dt)
+        else:
+            time = np.append(time, time[-1] + 1)
+        energy = np.append(energy, Ttotal + Utotal)
+        self.plot.set_xdata(time)
+        self.plot.set_ydata(energy)
+        self.axes.relim()
+        self.axes.autoscale_view()
+        plt.draw()
+        plt.pause(0.01)
+
+        # print Ttotal + Utotal
+
 
 
     def calculateCOM(self):
@@ -96,7 +126,7 @@ class Body:
     """ A circular planet with a velocity, size and density """
 
     # If the body has a radius greater than this, the body is treated as a gas cloud
-    COLLISION_RADIUS = 5
+    GAS_PLANET_RADIUS = 5
 
     def __init__(self, (x, y), size, mass):
         self.position = Vector2D(x, y)
@@ -177,12 +207,10 @@ class Body:
         dr = other.position - self.position
         dist = dr.length()
 
-        theta = dr.angle()
-
         if dist < other.size + self.size:
-            if other.size > self.COLLISION_RADIUS:
+            if other.size > self.GAS_PLANET_RADIUS:
                 force = (G * self.mass * other.mass / other.size ** 2) * (dist/other.size)
-            elif self.size > self.COLLISION_RADIUS:
+            elif self.size > self.GAS_PLANET_RADIUS:
                 force = (G * self.mass * other.mass / self.size ** 2) * (dist/self.size)
             else:
                 force = 0
@@ -190,3 +218,30 @@ class Body:
             force = G * self.mass * other.mass / dist ** 2
 
         return (dr/dist)*force/self.mass
+
+    def getKineticEnergy(self):
+        return 0.5 * self.mass * self.velocity.dot(self.velocity)
+
+    def getPotentialEnergyWRT(self, other, G):
+        if other is None:
+            return 0
+
+        if other is self:
+            return 0
+
+        dr = other.position - self.position
+        dist =  dr.length()
+
+        if dist < other.size + self.size:
+            if other.size > self.GAS_PLANET_RADIUS:
+                U = -(G * self.mass * other.mass / other.size ** 2) * (dist ** 2 / (2 * other.size))
+            elif self.size > self.GAS_PLANET_RADIUS:
+                U = -(G * self.mass * other.mass / self.size ** 2) * (dist ** 2 / (2 * self.size))
+            else:
+                U = -(G * self.mass * other.mass) / (self.size + other.size)
+        else:
+            U = -G * self.mass * other.mass / dist
+
+        return U
+
+
