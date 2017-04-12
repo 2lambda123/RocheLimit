@@ -24,13 +24,15 @@ class Environment:
         self.trail = []
         self.maxTrailLength = 1000
 
-        self.plot, = plt.plot([], [])
+        self.oscEnergy, = plt.plot([], [], 'b-', label='Numerical Energy')
+        self.constEnergy, = plt.plot([], [], 'r-', label='Theoretical Energy')
         plt.ion() # turn on interactive mode
         self.axes = plt.gca()
         self.axes.set_autoscale_on(True)
         plt.title("Energy vs. Time")
         plt.xlabel("Timestep")
         plt.ylabel("Total Energy (J)")
+        plt.legend()
 
 
     def addBodies(self, n=1, **kargs):
@@ -68,19 +70,28 @@ class Environment:
             U = 0
             for other in self.bodies:
                 U += body.getPotentialEnergyWRT(other, G)
+            U += body.getPotentialEnergyWRT(self.origin, G)
             Utotal += U
             Ttotal += body.getKineticEnergy()
 
-        time = self.plot.get_xdata()
-        energy = self.plot.get_ydata()
+        time = self.oscEnergy.get_xdata()
+        energy = self.oscEnergy.get_ydata()
+        constEnergy = self.constEnergy.get_ydata()
 
         if len(time) == 0:
             time = np.append(time, dt)
         else:
             time = np.append(time, time[-1] + 1)
         energy = np.append(energy, Ttotal + Utotal)
-        self.plot.set_xdata(time)
-        self.plot.set_ydata(energy)
+
+        moon = self.bodies[0]
+        E = -G * moon.mass * self.origin.mass / (2*(self.origin.position - moon.position).length())
+        constEnergy = np.append(constEnergy, E)
+
+        self.oscEnergy.set_xdata(time)
+        self.oscEnergy.set_ydata(energy)
+        self.constEnergy.set_xdata(time)
+        self.constEnergy.set_ydata(constEnergy)
         self.axes.relim()
         self.axes.autoscale_view()
         plt.draw()
