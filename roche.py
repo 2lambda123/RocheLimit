@@ -25,7 +25,7 @@ class Environment:
         self.maxTrailLength = 1000
 
         self.oscEnergy, = plt.plot([], [], 'b-', label='Numerical Energy')
-        self.constEnergy, = plt.plot([], [], 'r-', label='Theoretical Energy')
+        # self.constEnergy, = plt.plot([], [], 'r-', label='Theoretical Energy')
         plt.ion() # turn on interactive mode
         self.axes = plt.gca()
         self.axes.set_autoscale_on(True)
@@ -63,6 +63,7 @@ class Environment:
         # self.calculateCOM()
 
         self.verlet(G, dt)
+        # self.euler(G, dt)
 
         Ttotal = 0 # total Kinetic Energy of all bodies
         Utotal = 0 # total Potential Energy of all bodies
@@ -76,22 +77,23 @@ class Environment:
 
         time = self.oscEnergy.get_xdata()
         energy = self.oscEnergy.get_ydata()
-        constEnergy = self.constEnergy.get_ydata()
+        # constEnergy = self.constEnergy.get_ydata()
 
         if len(time) == 0:
-            time = np.append(time, dt)
+            time = np.append(time, 1)
         else:
             time = np.append(time, time[-1] + 1)
         energy = np.append(energy, Ttotal + Utotal)
 
-        moon = self.bodies[0]
-        E = -G * moon.mass * self.origin.mass / (2*(self.origin.position - moon.position).length())
-        constEnergy = np.append(constEnergy, E)
+        # moon = self.bodies[0]
+        # dist = (self.origin.position - moon.position).length()
+        # E = -G * moon.mass * self.origin.mass / (2*dist)
+        # constEnergy = np.append(constEnergy, E)
 
         self.oscEnergy.set_xdata(time)
         self.oscEnergy.set_ydata(energy)
-        self.constEnergy.set_xdata(time)
-        self.constEnergy.set_ydata(constEnergy)
+        # self.constEnergy.set_xdata(time)
+        # self.constEnergy.set_ydata(constEnergy)
         self.axes.relim()
         self.axes.autoscale_view()
         plt.draw()
@@ -130,6 +132,18 @@ class Environment:
                 other.acceleration += other.getGravityAcceleration(body, G)
         for body in self.bodies:
             body.velocity += 0.5 * dt * body.acceleration
+
+    def euler(self, G, dt):
+        for body in self.bodies:
+            body.acceleration = Vector2D.zero()
+        for i, body in enumerate(self.bodies):
+            body.acceleration += body.getGravityAcceleration(self.origin, G)
+            for other in self.bodies[i+1:]:
+                body.acceleration += body.getGravityAcceleration(other, G)
+                other.acceleration += other.getGravityAcceleration(body, G)
+        for body in self.bodies:
+            body.velocity, body.position = body.velocity + dt * body.acceleration, body.position + dt * body.velocity
+
 
 
 

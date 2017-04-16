@@ -102,6 +102,8 @@ for i in range(N):
 v = ((2 * m**3 * G * (earth_mass + moon_mass)) *
     ((1 / apoapsis) - (1 / (periapsis + apoapsis))))**0.5
 
+# v = math.sqrt(m**3 * G * earth_mass/apoapsis)
+
 v = SPEED_REDUCER*v
 
 moon.velocity = Vector2D(0, - v/m) #m/s
