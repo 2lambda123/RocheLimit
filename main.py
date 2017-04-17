@@ -40,9 +40,6 @@ periapsis = apoapsis
 if apoapsis < periapsis:
     apoapsis, periapsis = periapsis, apoapsis
 
-# To get the COM orbiting, we have to reduce the calculated speed.
-SPEED_REDUCER = 1
-
 # Pixel-to-Metre conversion.
 
 # As we already defined the apoapsis, we'll use its height as our base 
@@ -65,20 +62,17 @@ if 2 * (apoapsis * periapsis)**0.5/m > height - 2 * vmargin:
 G = (6.674e-11)/m**3
 
 moon_radius = 1737500 / m # in km, converted to pixels
-universe = Environment((width, height), moon_radius)
+universe = Environment((width, height))
 universe.colour = (0,0,0)
 
 earth_radius = 6371000 / m # in metres, converted to pixels through m
 earth_mass = 5.972e24 # kg
 earth = Body((hmargin + (apoapsis / m), height / 2), earth_radius, earth_mass)
-earth.fixed = True
 earth.colour = (100, 100, 255) # baby blue
-universe.origin = earth
+universe.primary = earth
 
 # percentage mass that the moon has
 MOON_FRACTION = 1
-
-
 
 moon_mass = 7.348e22 # kg
 centerPos = Vector2D(hmargin, height/2)
@@ -103,8 +97,6 @@ v = ((2 * m**3 * G * (earth_mass + moon_mass)) *
     ((1 / apoapsis) - (1 / (periapsis + apoapsis))))**0.5
 
 # v = math.sqrt(m**3 * G * earth_mass/apoapsis)
-
-v = SPEED_REDUCER*v
 
 moon.velocity = Vector2D(0, - v/m) #m/s
 for body in bodies:
@@ -169,21 +161,19 @@ while running:
 
     # ~~~~~ End Planet Trail Drawing Code ~~~~~ #
 
-    # Draw origin body
-    pygame.draw.aalines(screen, universe.origin.colour, True, universe.origin.findOutline(height, 1), 1)
-    pygame.draw.aalines(screen, universe.origin.colour, True, universe.origin.findOutline(height, 0), 1)
+    if universe.primary:
+        # Draw primary body
+        pygame.draw.aalines(screen, universe.primary.colour, True, universe.primary.findOutline(height, 1), 1)
+        pygame.draw.aalines(screen, universe.primary.colour, True, universe.primary.findOutline(height, 0), 1)
 
-    pygame.draw.circle(screen, universe.origin.colour, (int(universe.origin.position.x), height - int(universe.origin.position.y)), int(universe.origin.size), 0)
+        pygame.draw.circle(screen, universe.primary.colour, (int(universe.primary.position.x), height - int(universe.primary.position.y)), int(universe.primary.size), 0)
 
 
     for p in universe.bodies:
 
         # I may have got text working
         if moon.areWeDead(earth) == True:
-            # screen.blit(font.render('YOU KILLED', True, (255,0,0), (255,255,255)), (100, 400))
-            # screen.blit(font.render('EVERYONE', True, (255,0,0), (255,255,255)), (110, 465))
             print "YOU KILLED EVERYONE!"
-
 
         # Draws it so that (0,0) is the bottom left corner
         if p.size < 2:

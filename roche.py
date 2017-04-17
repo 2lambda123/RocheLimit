@@ -7,100 +7,28 @@ from geometry import Vector2D
 # Gravitational Constant
 # Converted to pixels using the conversion factor from main.
 # G = (6.674*10**-11)/(124738.461538)**3 # m^3 / kg s^2
-# I am currently doing a hacky way of transferring G through, so if there's a better way, please let me know!
 
 class Environment:
     """ Defines the boundary of a simulation and its properties """
 
-    def __init__(self, (width, height), collision_radius):
+    def __init__(self, (width, height)):
         self.width = width
         self.height = height
         self.colour = (255, 255, 255)
-        self.origin = None
+        self.primary = None
         self.bodies = []
-        self.collision_radius = collision_radius
         self.COM = Vector2D.zero()
         self.M = 0
         self.trail = []
         self.maxTrailLength = 1000
 
-        self.oscEnergy, = plt.plot([], [], 'b-', label='Numerical Energy')
-        # self.constEnergy, = plt.plot([], [], 'r-', label='Theoretical Energy')
-        plt.ion() # turn on interactive mode
-        self.axes = plt.gca()
-        self.axes.set_autoscale_on(True)
-        plt.title("Energy vs. Time")
-        plt.xlabel("Timestep")
-        plt.ylabel("Total Energy (J)")
-        plt.legend()
-
-
-    def addBodies(self, n=1, **kargs):
-        """ Add n planets with properties given by keyword arguments """
-
-        for i in range(n):
-            size = kargs.get('size', random.randint(10, 20))
-            if 'density' in kargs:
-                density = kargs.get('density', 1)
-                mass = 4/3 * math.pi * density * (size ** 3)
-            else:
-                mass = kargs.get('mass', random.randint(100, 10000))
-
-            x = kargs.get('x', random.uniform(size, self.width - size))
-            y = kargs.get('y', random.uniform(size, self.height - size))
-
-            planet = Body((x, y), size, mass)
-            speed = kargs.get('speed', random.random())
-            angle = kargs.get('angle', random.uniform(0, math.pi * 2))
-            planet.velocity = Vector2D.create_from_angle(angle, speed)
-            planet.colour = kargs.get('colour', (0, 0, 255))
-
-            self.bodies.append(planet)
-
     def update(self, G, dt=0.01):
         """  Calls particle functions """
-
-        # self.calculateCOM()
+        # Uncomment to draw COM trail
+        # self.calculateCOM(),
 
         self.verlet(G, dt)
         # self.euler(G, dt)
-
-        Ttotal = 0 # total Kinetic Energy of all bodies
-        Utotal = 0 # total Potential Energy of all bodies
-        for i, body in enumerate(self.bodies):
-            U = 0
-            for other in self.bodies:
-                U += body.getPotentialEnergyWRT(other, G)
-            U += body.getPotentialEnergyWRT(self.origin, G)
-            Utotal += U
-            Ttotal += body.getKineticEnergy()
-
-        time = self.oscEnergy.get_xdata()
-        energy = self.oscEnergy.get_ydata()
-        # constEnergy = self.constEnergy.get_ydata()
-
-        if len(time) == 0:
-            time = np.append(time, 1)
-        else:
-            time = np.append(time, time[-1] + 1)
-        energy = np.append(energy, Ttotal + Utotal)
-
-        # moon = self.bodies[0]
-        # dist = (self.origin.position - moon.position).length()
-        # E = -G * moon.mass * self.origin.mass / (2*dist)
-        # constEnergy = np.append(constEnergy, E)
-
-        self.oscEnergy.set_xdata(time)
-        self.oscEnergy.set_ydata(energy)
-        # self.constEnergy.set_xdata(time)
-        # self.constEnergy.set_ydata(constEnergy)
-        self.axes.relim()
-        self.axes.autoscale_view()
-        plt.draw()
-        plt.pause(0.01)
-
-        # print Ttotal + Utotal
-
 
 
     def calculateCOM(self):
@@ -126,7 +54,8 @@ class Environment:
             body.position += dt * body.velocity
             body.acceleration = Vector2D.zero()
         for i, body in enumerate(self.bodies):
-            body.acceleration += body.getGravityAcceleration(self.origin, G)
+            if self.primary:
+                body.acceleration += body.getGravityAcceleration(self.primary, G)
             for other in self.bodies[i+1:]:
                 body.acceleration += body.getGravityAcceleration(other, G)
                 other.acceleration += other.getGravityAcceleration(body, G)
@@ -137,7 +66,8 @@ class Environment:
         for body in self.bodies:
             body.acceleration = Vector2D.zero()
         for i, body in enumerate(self.bodies):
-            body.acceleration += body.getGravityAcceleration(self.origin, G)
+            if self.primary:
+                body.acceleration += body.getGravityAcceleration(self.primary, G)
             for other in self.bodies[i+1:]:
                 body.acceleration += body.getGravityAcceleration(other, G)
                 other.acceleration += other.getGravityAcceleration(body, G)
@@ -187,43 +117,12 @@ class Body:
             edge.append([self.position.x + (self.size - scale) * math.cos(math.pi * n * step / 180), height - (self.position.y + (self.size - scale) * math.sin(math.pi * n * step / 180))])
         return edge
 
-
-    def verlet(self, other, G, dt):
-        if not self.fixed:
-            self.velocity += 0.5 * dt * self.acceleration
-            self.position += dt * self.velocity
-            self.acceleration = self.getGravityAcceleration(other, G)
-            self.velocity += 0.5 * dt * self.acceleration
-
-    # Verlet calculation using COM
-    def verletCOM(self, M, R, G, collision_radius, origin, dt):
-        if not self.fixed:
-            self.velocity += 0.5 * dt * self.acceleration
-            self.position += dt * self.velocity
-            self.acceleration = self.getGravityAccelerationCOM(G, M, R, collision_radius) + self.getGravityAcceleration(origin, G)
-            self.velocity += 0.5 * dt * self.acceleration
-
     def areWeDead(self, other):
         dr = self.position - other.position
         dist = dr.length()
 
         if dist < other.size + self.size:
             return True
-
-    def getGravityAccelerationCOM(self, G, M, R, collision_radius):
-        dr = R - self.position
-        dist = dr.length()
-
-        theta = dr.angle()
-        
-        if dist < collision_radius:
-            # could be changed to linear function
-            force = G * (M - self.mass) * self.mass / collision_radius ** 2 * dist/collision_radius
-        else:
-            force = G * (M - self.mass) * self.mass / dist ** 2
-
-        # return  Vector2D.create_from_angle(theta, force / self.mass)  # this feels wrong
-        return (dr/dist)*force/self.mass
 
     def getGravityAcceleration(self, other, G):  # this isn't where this function should go
         if other is None:
