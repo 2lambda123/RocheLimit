@@ -4,8 +4,8 @@ from numbers import Number
 class Vector2D:
 
     def __init__(self, x, y):
-        self.x = x
-        self.y = y
+        self.x = float(x)
+        self.y = float(y)
 
     def __add__(self, other):
         if isinstance(other, Vector2D):
